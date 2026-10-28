@@ -1,0 +1,90 @@
+{
+  "timestamp": "2026-10-26T17:41:07.279572",
+  "champion_model": "Ridge Regression",
+  "models": {
+    "Carrier Mean Baseline": {
+      "mae": 0.9275,
+      "rmse": 1.1504,
+      "r2": 0.6068,
+      "train_samples": 8155,
+      "test_samples": 2039,
+      "notes": "Parsimonious benchmark based strictly on historical carrier class mean."
+    },
+    "Ridge Regression": {
+      "mae": 0.9279,
+      "rmse": 1.1527,
+      "r2": 0.6052,
+      "train_samples": 8155,
+      "test_samples": 2039
+    },
+    "Gradient Boosting": {
+      "mae": 0.9297,
+      "rmse": 1.161,
+      "r2": 0.5995,
+      "train_samples": 8155,
+      "test_samples": 2039
+    },
+    "Random Forest": {
+      "mae": 0.9437,
+      "rmse": 1.1883,
+      "r2": 0.5804,
+      "train_samples": 8155,
+      "test_samples": 2039
+    }
+  },
+  "validation_diagnostics": {
+    "cv_5fold_carrier_rmse_mean": 1.1082,
+    "cv_5fold_ridge_rmse_mean": 1.1117,
+    "paired_ttest_t_stat": -1.8788,
+    "paired_ttest_p_value": 0.0604,
+    "difference_days": 0.0023,
+    "is_difference_statistically_significant": false,
+    "selection_rationale": "The Carrier-Class Mean Baseline (RMSE: 1.1504) slightly outperforms Ridge Regression (RMSE: 1.1527) by 0.0023 days (~3.3 minutes). The paired t-test confirms this difference is not statistically significant (p=0.0604). Ridge Regression is retained for counterfactual simulation because it incorporates continuous geographic distance and destination parameters, while pure carrier lookup lacks sensitivity to plant reassignments. No claim of ML superiority is made."
+  },
+  "feature_names": [
+    "Product Name_Everlasting Gobstopper",
+    "Product Name_Fizzy Lifting Drinks",
+    "Product Name_Fun Dip",
+    "Product Name_Hair Toffee",
+    "Product Name_Kazookles",
+    "Product Name_Laffy Taffy",
+    "Product Name_Lickable Wallpaper",
+    "Product Name_Nerds",
+    "Product Name_SweeTARTS",
+    "Product Name_Wonka Bar - Fudge Mallows",
+    "Product Name_Wonka Bar - Milk Chocolate",
+    "Product Name_Wonka Bar - Nutty Crunch Surprise",
+    "Product Name_Wonka Bar - Triple Dazzle Caramel",
+    "Product Name_Wonka Bar -Scrumdiddlyumptious",
+    "Product Name_Wonka Gum",
+    "Division_Chocolate",
+    "Division_Other",
+    "Division_Sugar",
+    "Region_Atlantic",
+    "Region_Gulf",
+    "Region_Interior",
+    "Region_Pacific",
+    "Ship Mode_First Class",
+    "Ship Mode_Same Day",
+    "Ship Mode_Second Class",
+    "Ship Mode_Standard Class",
+    "Factory_Lot's O' Nuts",
+    "Factory_Secret Factory",
+    "Factory_Sugar Shack",
+    "Factory_The Other Factory",
+    "Factory_Wicked Choccy's",
+    "Units",
+    "Distance_km"
+  ],
+  "target": "lead_time_days",
+  "sample_counts": {
+    "total_orders": 10194,
+    "train_orders": 8155,
+    "test_orders": 2039
+  },
+  "audit_summary": {
+    "total_sales": 141783.63,
+    "total_profit": 93442.8,
+    "avg_lead_time": 4.292328820875024
+  }
+}
