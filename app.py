@@ -13,8 +13,10 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 
-# Ensure project root is in sys.path
+# Ensure project root is in sys.path (supports both root app.py and src/app.py entry points)
 BASE_DIR = Path(__file__).resolve().parent
+if BASE_DIR.name == "src":
+    BASE_DIR = BASE_DIR.parent
 if str(BASE_DIR) not in sys.path:
     sys.path.insert(0, str(BASE_DIR))
 
