@@ -86,7 +86,9 @@ DDL_STATEMENTS = [
         sales REAL NOT NULL CHECK (sales >= 0),
         gross_profit REAL NOT NULL,
         cost REAL NOT NULL,
+        raw_lead_time_days REAL NOT NULL DEFAULT 0,
         lead_time_days REAL NOT NULL CHECK (lead_time_days >= 0),
+        provenance_tier TEXT NOT NULL DEFAULT 'Calibrated Operational Calculation',
         FOREIGN KEY (product_id) REFERENCES products(product_id) ON DELETE RESTRICT,
         FOREIGN KEY (carrier_id) REFERENCES carriers(carrier_id) ON DELETE RESTRICT,
         FOREIGN KEY (factory_id) REFERENCES factories(factory_id) ON DELETE RESTRICT

@@ -209,15 +209,18 @@ def run_full_database_seed() -> Dict[str, Any]:
                 float(row["Sales"]),
                 float(row["Gross Profit"]),
                 float(row["Cost"]),
-                float(row["lead_time_days"])
+                float(row.get("raw_lead_time_days", 0.0)),
+                float(row["lead_time_days"]),
+                str(row.get("Lead_Time_Evidence_Tier", "Calibrated Operational Calculation"))
             ))
 
         cursor.executemany("""
             INSERT INTO orders (
                 order_row_id, order_id, order_date, ship_date, customer_id,
                 city, state_province, region, postal_code, division,
-                product_id, carrier_id, factory_id, units, sales, gross_profit, cost, lead_time_days
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+                product_id, carrier_id, factory_id, units, sales, gross_profit, cost,
+                raw_lead_time_days, lead_time_days, provenance_tier
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
         """, orders_to_insert)
 
         # 7. Seed Model Evaluations Registry

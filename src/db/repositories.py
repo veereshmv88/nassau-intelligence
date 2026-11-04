@@ -52,7 +52,7 @@ class OrderRepository:
                     p.product_name, p.division,
                     f.factory_name, o.city, o.state_province, o.region,
                     c.ship_mode, o.units, o.sales, o.gross_profit, o.cost,
-                    o.lead_time_days
+                    o.raw_lead_time_days, o.lead_time_days, o.provenance_tier
                 FROM orders o
                 JOIN products p ON o.product_id = p.product_id
                 JOIN factories f ON o.factory_id = f.factory_id

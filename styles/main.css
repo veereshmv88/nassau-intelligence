@@ -6,34 +6,38 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 
 :root {
-  /* Color Palette matching reference UI */
-  --sidebar-bg: #0C281E;
+  /* Global Color System (Nassau Enterprise Light Theme) */
+  --canvas: #F3F7F5;
+  --canvas-alt: #EAF3EF;
+  --sidebar-bg: #0C2B20;
   --sidebar-bg-gradient: linear-gradient(180deg, #092118 0%, #0C2B20 40%, #0A241B 100%);
   --sidebar-text: #EAF3EF;
-  --sidebar-text-muted: #8EA89D;
-  --sidebar-active-pill: #A5DFC5;
-  --sidebar-active-text: #092118;
+  --sidebar-text-muted: #A3B8B0;
+  --sidebar-active-pill: #B7E4D1;
+  --sidebar-active-text: #0C2B20;
   --sidebar-hover-bg: rgba(255, 255, 255, 0.08);
 
-  --canvas: #F5F7F6;
-  --canvas-alt: #EBF1EE;
   --surface-white: #FFFFFF;
-  --surface-border: #E2E8E4;
-  --surface-border-subtle: #EDF2EE;
+  --surface-secondary: #EAF3EF;
+  --surface-border: #DCE7E1;
+  --surface-border-subtle: #E8EFEA;
 
-  --ink-primary: #11231D;
-  --ink-secondary: #586B63;
+  --emerald-primary: #087F5B;
+  --forest-green: #087F5B;
+  --forest-green-hover: #066346;
+  --mint-accent: #B7E4D1;
+  --mint-tint: #EAF3EF;
+
+  --ink-primary: #12372B;
+  --ink-body: #25352F;
+  --ink-secondary: #718078;
   --ink-muted: #8E9F97;
 
-  --forest-green: #0C2B20;
-  --forest-green-hover: #071D15;
-  --emerald-primary: #087F5B;
-  --mint-accent: #A5DFC5;
-  --mint-tint: #EBF7F1;
   --teal-accent: #5AB9AD;
   --blue-observed: #2C73D2;
-  --amber-warning: #E9A23B;
-  --red-risk: #C74747;
+  --success: #168653;
+  --amber-warning: #D99A24;
+  --red-risk: #D94848;
 
   --shadow-card: 0 2px 10px rgba(12, 40, 30, 0.04);
   --shadow-hover: 0 6px 18px rgba(12, 40, 30, 0.08);
@@ -80,13 +84,21 @@ html, body, [data-testid="stAppViewContainer"] {
   background: var(--sidebar-bg-gradient) !important;
   border-right: 1px solid rgba(255, 255, 255, 0.08) !important;
   box-shadow: 4px 0 20px rgba(0, 0, 0, 0.15) !important;
+  min-width: 270px !important;
+}
+
+[data-testid="stSidebar"] > div:first-child {
+  background: var(--sidebar-bg-gradient) !important;
 }
 
 [data-testid="stSidebar"] .block-container {
-  padding-top: 1.2rem !important;
-  padding-left: 1rem !important;
-  padding-right: 1rem !important;
+  padding-top: 1rem !important;
+  padding-left: 0.85rem !important;
+  padding-right: 0.85rem !important;
   padding-bottom: 1.5rem !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 6px !important;
 }
 
 /* Sidebar Logo & Branding */
@@ -94,8 +106,8 @@ html, body, [data-testid="stAppViewContainer"] {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 8px 10px 18px 8px;
-  margin-bottom: 10px;
+  padding: 6px 10px 14px 6px;
+  margin-bottom: 6px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
@@ -117,98 +129,133 @@ html, body, [data-testid="stAppViewContainer"] {
 .sidebar-brand-tagline {
   font-size: 8.5px;
   font-weight: 700;
-  color: var(--sidebar-text-muted);
+  color: #A3B8B0;
   letter-spacing: 1.2px;
   text-transform: uppercase;
   margin-top: 3px;
 }
 
 /* ==========================================================================
-   SIDEBAR RADIO NAVIGATION (TRANSFORMED INTO VERTICAL PILLS)
+   SIDEBAR RADIO NAVIGATION (ELEGANT ENTERPRISE VERTICAL PILLS)
    ========================================================================== */
 section[data-testid="stSidebar"] div[data-testid="stRadio"] {
   background: transparent !important;
+  width: 100% !important;
+  margin-bottom: 6px !important;
 }
 
+/* Hide widget label */
 section[data-testid="stSidebar"] div[data-testid="stRadio"] > label,
 section[data-testid="stSidebar"] div[data-testid="stRadio"] [data-testid="stWidgetLabel"] {
   display: none !important;
   position: absolute !important;
   width: 1px !important;
   height: 1px !important;
-  padding: 0 !important;
-  margin: -1px !important;
   overflow: hidden !important;
   clip: rect(0, 0, 0, 0) !important;
-  white-space: nowrap !important;
-  border: 0 !important;
 }
 
 section[data-testid="stSidebar"] div[data-testid="stRadio"] > div[role="radiogroup"] {
-  gap: 4px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 3px !important;
   background: transparent !important;
+  width: 100% !important;
 }
 
+/* Each navigation item pill */
 section[data-testid="stSidebar"] div[data-testid="stRadio"] label[data-baseweb="radio"],
 section[data-testid="stSidebar"] div[data-testid="stRadio"] div[role="radiogroup"] > label {
   width: 100% !important;
-  padding: 9px 16px !important;
-  border-radius: var(--radius-pill) !important;
+  min-height: 38px !important;
+  padding: 8px 12px !important;
+  border-radius: 8px !important;
   margin: 0 !important;
   cursor: pointer !important;
-  transition: all 180ms cubic-bezier(0.4, 0, 0.2, 1) !important;
+  transition: all 150ms ease !important;
   background: transparent !important;
   border: 1px solid transparent !important;
   display: flex !important;
   align-items: center !important;
+  box-sizing: border-box !important;
 }
 
-/* Hide default radio circle completely in sidebar */
+/* Hide the radio circle (child 1) */
 section[data-testid="stSidebar"] div[data-testid="stRadio"] label[data-baseweb="radio"] > div:first-child,
-section[data-testid="stSidebar"] div[data-testid="stRadio"] label[data-baseweb="radio"] input[type="radio"],
-section[data-testid="stSidebar"] div[data-testid="stRadio"] input[type="radio"] + div,
-section[data-testid="stSidebar"] div[data-testid="stRadio"] [data-testid="stRadioButton"] {
+section[data-testid="stSidebar"] div[data-testid="stRadio"] div[role="radiogroup"] > label > div:first-child {
   display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+  visibility: hidden !important;
 }
 
-/* Sidebar Nav item typography */
-section[data-testid="stSidebar"] div[data-testid="stRadio"] label[data-baseweb="radio"] div[data-testid="stMarkdownContainer"] p,
+/* Hide the native radio input (child 2) */
+section[data-testid="stSidebar"] div[data-testid="stRadio"] input[type="radio"] {
+  display: none !important;
+  position: absolute !important;
+  width: 0 !important;
+  height: 0 !important;
+  opacity: 0 !important;
+}
+
+/* Make the text container (child 3 / input + div) FULLY VISIBLE AND EXPANDED */
+section[data-testid="stSidebar"] div[data-testid="stRadio"] label[data-baseweb="radio"] > div:last-child,
+section[data-testid="stSidebar"] div[data-testid="stRadio"] input[type="radio"] + div,
+section[data-testid="stSidebar"] div[data-testid="stRadio"] div[role="radiogroup"] > label > div:last-child {
+  display: flex !important;
+  align-items: center !important;
+  width: 100% !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+/* Text & Icon typography */
+section[data-testid="stSidebar"] div[data-testid="stRadio"] label[data-baseweb="radio"] div[data-testid="stMarkdownContainer"],
+section[data-testid="stSidebar"] div[data-testid="stRadio"] div[role="radiogroup"] label div[data-testid="stMarkdownContainer"] {
+  width: 100% !important;
+  display: flex !important;
+  align-items: center !important;
+}
+
+section[data-testid="stSidebar"] div[data-testid="stRadio"] label[data-baseweb="radio"] p,
 section[data-testid="stSidebar"] div[data-testid="stRadio"] div[role="radiogroup"] label p {
   font-size: 13px !important;
   font-weight: 500 !important;
-  color: var(--sidebar-text-muted) !important;
+  color: #A3B8B0 !important;
   margin: 0 !important;
   display: flex !important;
   align-items: center !important;
   gap: 10px !important;
   letter-spacing: -0.01em !important;
+  line-height: 1.2 !important;
+  width: 100% !important;
+  white-space: nowrap !important;
 }
 
-/* Sidebar Nav Item Hover State */
+/* Inactive Nav Item Hover State */
 section[data-testid="stSidebar"] div[data-testid="stRadio"] label[data-baseweb="radio"]:hover,
 section[data-testid="stSidebar"] div[data-testid="stRadio"] div[role="radiogroup"] > label:hover {
-  background: var(--sidebar-hover-bg) !important;
+  background: rgba(255, 255, 255, 0.08) !important;
 }
 
-section[data-testid="stSidebar"] div[data-testid="stRadio"] label[data-baseweb="radio"]:hover div[data-testid="stMarkdownContainer"] p,
-section[data-testid="stSidebar"] div[data-testid="stRadio"] div[role="radiogroup"] > label:hover p {
+section[data-testid="stSidebar"] div[data-testid="stRadio"] label[data-baseweb="radio"]:hover p,
+section[data-testid="stSidebar"] div[data-testid="stRadio"] div[role="radiogroup"] label:hover p {
   color: #FFFFFF !important;
 }
 
-/* SIDEBAR ACTIVE NAV PILL — Mint background, Dark text */
+/* ACTIVE NAV PILL — Mint background, Deep Forest Green text */
 section[data-testid="stSidebar"] div[data-testid="stRadio"] label[data-baseweb="radio"]:has(input:checked),
 section[data-testid="stSidebar"] div[data-testid="stRadio"] label[data-baseweb="radio"][aria-checked="true"],
-section[data-testid="stSidebar"] div[data-testid="stRadio"] label[data-baseweb="radio"]:has(div[aria-checked="true"]),
-section[data-testid="stSidebar"] div[data-testid="stRadio"] label:has(input[type="radio"]:checked) {
-  background: var(--sidebar-active-pill) !important;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2) !important;
+section[data-testid="stSidebar"] div[data-testid="stRadio"] div[role="radiogroup"] > label:has(input:checked) {
+  background: #B7E4D1 !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2) !important;
+  border-radius: 8px !important;
 }
 
-section[data-testid="stSidebar"] div[data-testid="stRadio"] label[data-baseweb="radio"]:has(input:checked) div[data-testid="stMarkdownContainer"] p,
-section[data-testid="stSidebar"] div[data-testid="stRadio"] label[data-baseweb="radio"][aria-checked="true"] div[data-testid="stMarkdownContainer"] p,
-section[data-testid="stSidebar"] div[data-testid="stRadio"] label[data-baseweb="radio"]:has(div[aria-checked="true"]) div[data-testid="stMarkdownContainer"] p,
-section[data-testid="stSidebar"] div[data-testid="stRadio"] label:has(input[type="radio"]:checked) p {
-  color: var(--sidebar-active-text) !important;
+section[data-testid="stSidebar"] div[data-testid="stRadio"] label[data-baseweb="radio"]:has(input:checked) p,
+section[data-testid="stSidebar"] div[data-testid="stRadio"] label[data-baseweb="radio"][aria-checked="true"] p,
+section[data-testid="stSidebar"] div[data-testid="stRadio"] div[role="radiogroup"] > label:has(input:checked) p {
+  color: #0C2B20 !important;
   font-weight: 700 !important;
 }
 
@@ -256,9 +303,26 @@ div.main div[data-testid="stRadio"] div[role="radiogroup"] > label {
 
 /* Hide radio circle in main content tabs */
 div.main div[data-testid="stRadio"] label[data-baseweb="radio"] > div:first-child,
-div.main div[data-testid="stRadio"] label[data-baseweb="radio"] input[type="radio"],
-div.main div[data-testid="stRadio"] input[type="radio"] + div {
+div.main div[data-testid="stRadio"] div[role="radiogroup"] > label > div:first-child {
   display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+  visibility: hidden !important;
+}
+
+div.main div[data-testid="stRadio"] input[type="radio"] {
+  display: none !important;
+  position: absolute !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+
+div.main div[data-testid="stRadio"] label[data-baseweb="radio"] > div:last-child,
+div.main div[data-testid="stRadio"] input[type="radio"] + div,
+div.main div[data-testid="stRadio"] div[role="radiogroup"] > label > div:last-child {
+  display: flex !important;
+  align-items: center !important;
+  visibility: visible !important;
 }
 
 /* Main Tab typography */
@@ -303,13 +367,74 @@ div.main div[data-testid="stRadio"] label:has(input[type="radio"]:checked) p {
   font-weight: 700 !important;
 }
 
+/* Sidebar System Status Card */
+.sidebar-system-status {
+  margin-top: 14px;
+  padding: 12px 14px;
+  background: #14392D !important;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  font-size: 11px;
+}
+
+.status-header {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 10px;
+  font-weight: 800;
+  color: #E2ECE7;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.status-pulse-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #168653;
+  box-shadow: 0 0 6px #168653;
+  display: inline-block;
+}
+
+.status-badge-ok {
+  margin-left: auto;
+  font-size: 9px;
+  font-weight: 700;
+  padding: 2px 6px;
+  background: rgba(22, 134, 83, 0.35);
+  color: #B7E4D1;
+  border-radius: 10px;
+}
+
+.status-metric-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 5px;
+  font-size: 11px;
+}
+
+.status-label {
+  color: #A3B8B0;
+  font-weight: 400;
+}
+
+.status-value {
+  color: #FFFFFF;
+  font-weight: 600;
+}
+
 /* Sidebar Footer Tower Card */
 .sidebar-footer-tower {
-  margin-top: 24px;
-  padding: 16px 14px;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.04) 0%, rgba(255, 255, 255, 0.08) 100%);
+  margin-top: 10px;
+  padding: 14px 14px;
+  background: linear-gradient(180deg, #14392D 0%, #0C2B20 100%) !important;
   border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: var(--radius-md);
+  border-radius: 10px;
   position: relative;
   overflow: hidden;
 }
@@ -318,22 +443,21 @@ div.main div[data-testid="stRadio"] label:has(input[type="radio"]:checked) p {
   content: "";
   position: absolute;
   top: 0; left: 0; right: 0; height: 2px;
-  background: linear-gradient(90deg, transparent, var(--mint-accent), transparent);
+  background: linear-gradient(90deg, transparent, #B7E4D1, transparent);
 }
 
 .tower-title {
   font-size: 12.5px;
   font-weight: 700;
   color: #FFFFFF;
-  margin-top: 8px;
   line-height: 1.2;
 }
 
 .tower-subtitle {
   font-size: 10px;
-  color: var(--sidebar-text-muted);
-  margin-top: 4px;
-  letter-spacing: 0.2px;
+  color: #A3B8B0;
+  margin-top: 3px;
+  letter-spacing: 0.3px;
 }
 
 /* ==========================================================================
@@ -958,18 +1082,20 @@ div[data-testid="stVerticalBlockBorderWrapper"] > div {
 }
 
 /* ==========================================================================
-   PRIMARY ACTION BUTTON (RUN OPTIMIZATION)
+   PRIMARY ACTION BUTTON (RUN OPTIMIZATION) & GLOBAL BUTTONS
    ========================================================================== */
-div[data-testid="stButton"] > button {
-  background: var(--forest-green) !important;
+div[data-testid="stButton"] > button,
+button[kind="primary"] {
+  background: #087F5B !important;
+  background-color: #087F5B !important;
   color: #FFFFFF !important;
   font-size: 13.5px !important;
   font-weight: 700 !important;
   border: none !important;
-  border-radius: var(--radius-sm) !important;
-  height: 42px !important;
+  border-radius: 10px !important;
+  min-height: 44px !important;
   width: 100% !important;
-  box-shadow: 0 4px 14px rgba(12, 43, 32, 0.25) !important;
+  box-shadow: 0 4px 14px rgba(8, 127, 91, 0.28) !important;
   transition: all 180ms cubic-bezier(0.4, 0, 0.2, 1) !important;
   display: flex !important;
   align-items: center !important;
@@ -977,31 +1103,333 @@ div[data-testid="stButton"] > button {
   gap: 8px !important;
 }
 
-div[data-testid="stButton"] > button:hover {
-  background: var(--forest-green-hover) !important;
-  box-shadow: 0 6px 18px rgba(12, 43, 32, 0.35) !important;
+div[data-testid="stButton"] > button:hover,
+button[kind="primary"]:hover {
+  background: #066B4D !important;
+  background-color: #066B4D !important;
+  box-shadow: 0 6px 18px rgba(8, 127, 91, 0.38) !important;
   transform: translateY(-1px) !important;
+  color: #FFFFFF !important;
 }
 
-/* Input Form Elements Polishing */
-div[data-testid="stSelectbox"] label,
-div[data-testid="stNumberInput"] label,
-div[data-testid="stSlider"] label {
-  font-size: 12px !important;
+div[data-testid="stButton"] > button:active,
+button[kind="primary"]:active {
+  transform: translateY(0) !important;
+}
+
+div[data-testid="stButton"] > button * {
+  color: #FFFFFF !important;
+}
+
+button[kind="secondary"] {
+  background: #FFFFFF !important;
+  background-color: #FFFFFF !important;
+  color: #087F5B !important;
+  border: 1px solid #B7E4D1 !important;
   font-weight: 600 !important;
-  color: var(--ink-primary) !important;
-  margin-bottom: 4px !important;
+  border-radius: 10px !important;
 }
 
-div[data-baseweb="select"] > div {
-  border-radius: var(--radius-sm) !important;
-  border-color: var(--surface-border) !important;
+button[kind="secondary"]:hover {
+  background: #EAF3EF !important;
+  border-color: #087F5B !important;
+  color: #0C2B20 !important;
+}
+
+div[data-testid="stDownloadButton"] > button {
+  background: #FFFFFF !important;
+  background-color: #FFFFFF !important;
+  color: #087F5B !important;
+  border: 1px solid #DCE7E1 !important;
+  font-weight: 600 !important;
+  border-radius: 10px !important;
+  box-shadow: 0 1px 3px rgba(18, 55, 43, 0.04) !important;
+  transition: all 150ms ease !important;
+}
+
+div[data-testid="stDownloadButton"] > button:hover {
+  background: #EAF3EF !important;
+  border-color: #087F5B !important;
+  color: #0C2B20 !important;
+}
+
+/* ==========================================================================
+   INPUT FORM ELEMENTS — STRICT LIGHT THEME & MAXIMUM CONTRAST
+   ========================================================================== */
+/* Form Labels */
+div[data-testid="stSelectbox"] label,
+div[data-testid="stSelectbox"] label p,
+div[data-testid="stSelectbox"] [data-testid="stWidgetLabel"] p,
+div[data-testid="stNumberInput"] label,
+div[data-testid="stNumberInput"] label p,
+div[data-testid="stNumberInput"] [data-testid="stWidgetLabel"] p,
+div[data-testid="stTextInput"] label,
+div[data-testid="stTextInput"] label p,
+div[data-testid="stTextInput"] [data-testid="stWidgetLabel"] p,
+div[data-testid="stSlider"] label,
+div[data-testid="stSlider"] label p,
+div[data-testid="stSlider"] [data-testid="stWidgetLabel"] p {
   font-size: 12.5px !important;
+  font-weight: 700 !important;
+  color: #12372B !important;
+  margin-bottom: 5px !important;
+  letter-spacing: -0.01em !important;
 }
 
+/* 1. SELECTBOX CONTROL BOX (CLOSED STATE: WHITE BACKGROUND, DARK READABLE TEXT) */
+div[data-testid="stSelectbox"],
+div[data-testid="stSelectbox"] > div {
+  background-color: transparent !important;
+}
+
+div[data-testid="stSelectbox"] div[data-baseweb="select"],
+div[data-baseweb="select"] {
+  background-color: #FFFFFF !important;
+  background: #FFFFFF !important;
+  border-radius: 10px !important;
+}
+
+div[data-testid="stSelectbox"] div[data-baseweb="select"] > div,
+div[data-baseweb="select"] > div {
+  background-color: #FFFFFF !important;
+  background: #FFFFFF !important;
+  border: 1px solid #DCE7E1 !important;
+  border-radius: 10px !important;
+  min-height: 42px !important;
+  color: #25352F !important;
+  font-size: 13.5px !important;
+  font-weight: 500 !important;
+  box-shadow: 0 1px 3px rgba(18, 55, 43, 0.04) !important;
+  transition: all 150ms ease !important;
+}
+
+div[data-testid="stSelectbox"] div[data-baseweb="select"] > div:hover,
+div[data-baseweb="select"] > div:hover {
+  border-color: #087F5B !important;
+  background-color: #FFFFFF !important;
+  background: #FFFFFF !important;
+}
+
+div[data-testid="stSelectbox"] div[data-baseweb="select"] > div:focus-within,
+div[data-baseweb="select"] > div:focus-within {
+  border-color: #087F5B !important;
+  box-shadow: 0 0 0 2px rgba(8, 127, 91, 0.2) !important;
+  background-color: #FFFFFF !important;
+  background: #FFFFFF !important;
+}
+
+/* Selected Text inside closed selectbox */
+div[data-testid="stSelectbox"] div[data-baseweb="select"] div,
+div[data-testid="stSelectbox"] div[data-baseweb="select"] span,
+div[data-testid="stSelectbox"] div[data-baseweb="select"] p,
+div[data-baseweb="select"] div,
+div[data-baseweb="select"] span,
+div[data-baseweb="select"] p,
+div[data-baseweb="select"] div[aria-selected="true"],
+div[data-baseweb="select"] [role="combobox"],
+div[data-baseweb="select"] [data-testid="stSelectboxVirtualDropdown"] {
+  color: #25352F !important;
+  font-weight: 600 !important;
+  font-size: 13.5px !important;
+  background-color: transparent !important;
+  background: transparent !important;
+}
+
+/* Dropdown Arrow — Forest Green */
+div[data-testid="stSelectbox"] div[data-baseweb="select"] svg,
+div[data-baseweb="select"] svg,
+div[data-baseweb="select"] svg path {
+  fill: #087F5B !important;
+  color: #087F5B !important;
+}
+
+/* Dropdown Popover & Option Menu (OPEN STATE: WHITE BACKGROUND, DARK TEXT) */
+div[data-baseweb="popover"],
+div[data-baseweb="popover"] > div,
+div[data-baseweb="menu"],
+ul[role="listbox"],
+[data-baseweb="popover"] ul,
+div[data-testid="stSelectboxVirtualDropdown"] {
+  background-color: #FFFFFF !important;
+  background: #FFFFFF !important;
+  border: 1px solid #DCE7E1 !important;
+  border-radius: 10px !important;
+  box-shadow: 0 10px 25px rgba(18, 55, 43, 0.12) !important;
+  padding: 6px !important;
+}
+
+div[data-baseweb="popover"] div {
+  background-color: #FFFFFF !important;
+}
+
+/* Individual Options (Open State) */
+ul[role="listbox"] li[role="option"],
+div[data-baseweb="menu"] li {
+  background-color: #FFFFFF !important;
+  background: #FFFFFF !important;
+  color: #25352F !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  padding: 10px 14px !important;
+  border-radius: 8px !important;
+  margin: 2px 0 !important;
+  cursor: pointer !important;
+  transition: all 120ms ease !important;
+}
+
+ul[role="listbox"] li[role="option"] *,
+div[data-baseweb="menu"] li * {
+  color: #25352F !important;
+  background-color: transparent !important;
+}
+
+/* Option Hover State */
+ul[role="listbox"] li[role="option"]:hover,
+ul[role="listbox"] li[role="option"][aria-selected="false"]:hover,
+div[data-baseweb="menu"] li:hover {
+  background-color: #EAF3EF !important;
+  background: #EAF3EF !important;
+  color: #087F5B !important;
+}
+
+ul[role="listbox"] li[role="option"]:hover *,
+ul[role="listbox"] li[role="option"][aria-selected="false"]:hover *,
+div[data-baseweb="menu"] li:hover * {
+  color: #087F5B !important;
+}
+
+/* Selected Option State (Mint highlight, Forest green text) */
+ul[role="listbox"] li[role="option"][aria-selected="true"],
+ul[role="listbox"] li[aria-selected="true"],
+div[data-baseweb="menu"] li[aria-selected="true"] {
+  background-color: #D9F0E5 !important;
+  background: #D9F0E5 !important;
+  color: #087F5B !important;
+  font-weight: 700 !important;
+}
+
+ul[role="listbox"] li[role="option"][aria-selected="true"] *,
+ul[role="listbox"] li[aria-selected="true"] *,
+div[data-baseweb="menu"] li[aria-selected="true"] * {
+  color: #087F5B !important;
+  font-weight: 700 !important;
+}
+
+/* 2. NUMBER INPUTS & STEPPERS */
+div[data-testid="stNumberInput"],
+div[data-testid="stNumberInput"] > div {
+  background-color: transparent !important;
+}
+
+div[data-testid="stNumberInput"] div[data-baseweb="input"],
 div[data-baseweb="input"] {
-  border-radius: var(--radius-sm) !important;
-  border-color: var(--surface-border) !important;
+  background-color: #FFFFFF !important;
+  background: #FFFFFF !important;
+  border: 1px solid #DCE7E1 !important;
+  border-radius: 10px !important;
+  height: 42px !important;
+  overflow: hidden !important;
+  box-shadow: 0 1px 3px rgba(18, 55, 43, 0.04) !important;
+}
+
+div[data-testid="stNumberInput"] div[data-baseweb="input"] > div,
+div[data-baseweb="input"] > div {
+  background-color: #FFFFFF !important;
+  background: #FFFFFF !important;
+}
+
+div[data-testid="stNumberInput"] input,
+div[data-baseweb="input"] input {
+  background-color: #FFFFFF !important;
+  background: #FFFFFF !important;
+  color: #25352F !important;
+  font-weight: 700 !important;
+  font-size: 14px !important;
+  padding: 0 12px !important;
+  border: none !important;
+}
+
+div[data-testid="stNumberInput"] button {
+  background-color: #EAF3EF !important;
+  background: #EAF3EF !important;
+  color: #12372B !important;
+  border: none !important;
+  border-left: 1px solid #DCE7E1 !important;
+  border-right: 1px solid #DCE7E1 !important;
+  transition: background 150ms ease !important;
+}
+
+div[data-testid="stNumberInput"] button:hover {
+  background-color: #B7E4D1 !important;
+  background: #B7E4D1 !important;
+  color: #087F5B !important;
+}
+
+div[data-testid="stNumberInput"] button svg,
+div[data-testid="stNumberInput"] button svg path {
+  fill: #12372B !important;
+  color: #12372B !important;
+}
+
+/* 3. TEXT INPUTS */
+div[data-testid="stTextInput"] div[data-baseweb="input"],
+div[data-testid="stTextInput"] div[data-baseweb="input"] > div {
+  background-color: #FFFFFF !important;
+  background: #FFFFFF !important;
+  border: 1px solid #DCE7E1 !important;
+  border-radius: 10px !important;
+  height: 42px !important;
+  box-shadow: 0 1px 3px rgba(18, 55, 43, 0.04) !important;
+}
+
+div[data-testid="stTextInput"] input {
+  background-color: #FFFFFF !important;
+  background: #FFFFFF !important;
+  color: #25352F !important;
+  font-size: 13.5px !important;
+  border: none !important;
+}
+
+div[data-testid="stTextInput"] input::placeholder {
+  color: #718078 !important;
+}
+
+/* 4. MULTISELECT */
+div[data-testid="stMultiSelect"] div[data-baseweb="select"],
+div[data-testid="stMultiSelect"] div[data-baseweb="select"] > div {
+  background-color: #FFFFFF !important;
+  background: #FFFFFF !important;
+  border: 1px solid #DCE7E1 !important;
+  border-radius: 10px !important;
+}
+
+div[data-testid="stMultiSelect"] span[data-baseweb="tag"] {
+  background-color: #EAF3EF !important;
+  color: #087F5B !important;
+  border: 1px solid #B7E4D1 !important;
+  border-radius: 6px !important;
+}
+
+div[data-testid="stMultiSelect"] span[data-baseweb="tag"] * {
+  color: #087F5B !important;
+}
+
+/* 5. SLIDERS */
+div[data-testid="stSlider"] div[data-baseweb="slider"] div[role="slider"] {
+  background-color: #087F5B !important;
+  border: 3px solid #FFFFFF !important;
+  box-shadow: 0 2px 6px rgba(8, 127, 91, 0.4) !important;
+}
+
+div[data-testid="stSlider"] div[data-baseweb="slider"] > div > div {
+  background-color: #087F5B !important;
+}
+
+div[data-testid="stSlider"] div[data-testid="stTickBar"] div,
+div[data-testid="stSlider"] [data-testid="stThumbValue"] {
+  color: #12372B !important;
+  font-weight: 700 !important;
+  font-size: 12px !important;
 }
 
 /* ==========================================================================
