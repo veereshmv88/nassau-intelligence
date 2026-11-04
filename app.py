@@ -212,8 +212,8 @@ with st.sidebar:
     # Clean formatted radio choices with icons
     formatted_options = [f"{NAV_ICONS[item]}  {item}" for item in NAV_ITEMS]
     
-    # Default to Factory Optimization (index 3) to match reference design immediately
-    default_index = 3
+    # Default to Command Center (index 0) as primary landing page
+    default_index = 0
     
     selected_option = st.radio(
         "Navigation Menu",
@@ -307,37 +307,6 @@ st.markdown(f"""
 """, unsafe_allow_html=True)
 
 
-# Interactive Quick Search Expander (Functional and Connected to Real Data)
-with st.expander("🔎 Global Search & Quick Sourcing Inspector", expanded=False):
-    s_col1, s_col2 = st.columns([2, 1])
-    with s_col1:
-        search_query = st.text_input(
-            "Filter across products, factories, or regions",
-            placeholder="Type e.g. Wonka, Almond, Chicago, Pacific...",
-            key="global_search_query_input",
-            help="Type to search and filter products, factories, or regions"
-        )
-    with s_col2:
-        search_cat = st.selectbox(
-            "Entity Type Filter",
-            ["All Entities", "Products", "Factories", "Regions"],
-            key="global_search_cat_select",
-            help="Select entity category filter"
-        )
-    
-    if search_query.strip():
-        q = search_query.strip().lower()
-        matched_prods = [p for p in DEFAULT_PRODUCT_ASSIGNMENTS.keys() if q in p.lower()]
-        matched_facs = [f for f in FACTORIES.keys() if q in f.lower() or q in FACTORIES[f]['city'].lower()]
-        matched_regs = [r for r in REGION_ALIASES.keys() if q in r.lower() or q in REGION_ALIASES[r].lower()]
-        
-        st.markdown(f"**Found Matches:** {len(matched_prods)} Products, {len(matched_facs)} Facilities, {len(matched_regs)} Regions")
-        if matched_prods:
-            st.caption(f"**Matching SKUs:** {', '.join(matched_prods[:6])}")
-        if matched_facs:
-            st.caption(f"**Matching Facilities:** {', '.join(matched_facs)}")
-        if matched_regs:
-            st.caption(f"**Matching Regions:** {', '.join(matched_regs)}")
 
 
 # ===========================================================================
@@ -661,21 +630,20 @@ elif selected_page == "Network Intelligence":
     </div>
     """, unsafe_allow_html=True)
 
-    st.markdown('<div class="nassau-card">', unsafe_allow_html=True)
-    st.markdown("""
-    <div class="panel-header-strip">
-        <div class="panel-title-group">
-            <span class="panel-icon-badge">🗺️</span>
-            <div>
-                <div class="panel-heading-title">Active Supply Chain Transportation Network</div>
-                <div class="panel-heading-sub">5 production plants connected to 4 regional distribution hubs</div>
+    with st.container(border=True):
+        render_safe_html("""
+        <div class="panel-header-strip">
+            <div class="panel-title-group">
+                <span class="panel-icon-badge">🗺️</span>
+                <div>
+                    <div class="panel-heading-title">Active Supply Chain Transportation Network</div>
+                    <div class="panel-heading-sub">5 production plants connected to 4 regional distribution hubs</div>
+                </div>
             </div>
         </div>
-    </div>
-    """, unsafe_allow_html=True)
-    fig_map = create_factory_network_map(df)
-    st.plotly_chart(fig_map, use_container_width=True, config={'displayModeBar': False})
-    st.markdown('</div>', unsafe_allow_html=True)
+        """)
+        fig_map = create_factory_network_map(df)
+        st.plotly_chart(fig_map, use_container_width=True, config={'displayModeBar': False})
 
     # 5 Facility Cards
     st.markdown("#### Manufacturing Facility Footprint")
@@ -727,72 +695,69 @@ elif selected_page == "Predictive Intelligence":
     """, unsafe_allow_html=True)
 
     # Benchmark Matrix
-    st.markdown('<div class="nassau-card">', unsafe_allow_html=True)
-    st.markdown("""
-    <div class="panel-header-strip">
-        <div class="panel-title-group">
-            <span class="panel-icon-badge">📈</span>
-            <div>
-                <div class="panel-heading-title">Model Evaluation Matrix (Chronological Holdout Set, N = 2,039)</div>
-                <div class="panel-heading-sub">Trained on first 80% (8,155 orders) with zero data leakage; evaluated on last 20%</div>
+    with st.container(border=True):
+        render_safe_html("""
+        <div class="panel-header-strip">
+            <div class="panel-title-group">
+                <span class="panel-icon-badge">📈</span>
+                <div>
+                    <div class="panel-heading-title">Model Evaluation Matrix (Chronological Holdout Set, N = 2,039)</div>
+                    <div class="panel-heading-sub">Trained on first 80% (8,155 orders) with zero data leakage; evaluated on last 20%</div>
+                </div>
             </div>
         </div>
-    </div>
-    """, unsafe_allow_html=True)
+        """)
 
-    bench_data = [
-        {"Model": "Carrier Mean Baseline", "Parameters": 4, "MAE (Days)": "0.9275", "RMSE (Days)": "1.1504", "R² Score": "0.6068", "CV RMSE (5-Fold)": "1.1711 ± 0.038", "Status": "Empirical Baseline (Top Accuracy)"},
-        {"Model": "Ridge Regression", "Parameters": 24, "MAE (Days)": "0.9279", "RMSE (Days)": "1.1527", "R² Score": "0.6052", "CV RMSE (5-Fold)": "1.1738 ± 0.040", "Status": "Selected Continuous Surface"},
-        {"Model": "Gradient Boosting", "Parameters": 100, "MAE (Days)": "0.9297", "RMSE (Days)": "1.1610", "R² Score": "0.5995", "CV RMSE (5-Fold)": "1.1824 ± 0.042", "Status": "Non-linear Ensembling"},
-        {"Model": "Random Forest", "Parameters": 100, "MAE (Days)": "0.9437", "RMSE (Days)": "1.1883", "R² Score": "0.5804", "CV RMSE (5-Fold)": "1.2051 ± 0.045", "Status": "Sub-optimal on Holdout"}
-    ]
-    st.dataframe(pd.DataFrame(bench_data), use_container_width=True, hide_index=True)
+        bench_data = [
+            {"Model": "Carrier Mean Baseline", "Parameters": 4, "MAE (Days)": "0.9275", "RMSE (Days)": "1.1504", "R² Score": "0.6068", "CV RMSE (5-Fold)": "1.1711 ± 0.038", "Status": "Empirical Baseline (Top Accuracy)"},
+            {"Model": "Ridge Regression", "Parameters": 24, "MAE (Days)": "0.9279", "RMSE (Days)": "1.1527", "R² Score": "0.6052", "CV RMSE (5-Fold)": "1.1738 ± 0.040", "Status": "Selected Continuous Surface"},
+            {"Model": "Gradient Boosting", "Parameters": 100, "MAE (Days)": "0.9297", "RMSE (Days)": "1.1610", "R² Score": "0.5995", "CV RMSE (5-Fold)": "1.1824 ± 0.042", "Status": "Non-linear Ensembling"},
+            {"Model": "Random Forest", "Parameters": 100, "MAE (Days)": "0.9437", "RMSE (Days)": "1.1883", "R² Score": "0.5804", "CV RMSE (5-Fold)": "1.2051 ± 0.045", "Status": "Sub-optimal on Holdout"}
+        ]
+        st.dataframe(pd.DataFrame(bench_data), use_container_width=True, hide_index=True)
 
-    st.markdown("""
-    <div style="background: #F0FDF4; border-left: 3px solid #16A34A; padding: 12px 14px; border-radius: 6px; font-size: 11.5px; color: #166534; margin-top: 10px; line-height: 1.5;">
-        <b>Statistical Parsimony Finding:</b> A paired two-sample t-test on holdout residuals confirms that the 0.0023-day advantage of the Carrier Mean Baseline over Ridge Regression is <b>statistically insignificant</b> (t = -1.8788, p = 0.0604). Carrier class alone explains ~98% of dispatch lead-time variation. <b>No claim of ML predictive superiority is made.</b> Ridge Regression is retained strictly as a continuous regularized spatial surface for counterfactual distance modeling.
-    </div>
-    """, unsafe_allow_html=True)
-    st.markdown('</div>', unsafe_allow_html=True)
+        render_safe_html("""
+        <div style="background: #F0FDF4; border-left: 3px solid #16A34A; padding: 12px 14px; border-radius: 6px; font-size: 11.5px; color: #166534; margin-top: 10px; line-height: 1.5;">
+            <b>Statistical Parsimony Finding:</b> A paired two-sample t-test on holdout residuals confirms that the 0.0023-day advantage of the Carrier Mean Baseline over Ridge Regression is <b>statistically insignificant</b> (t = -1.8788, p = 0.0604). Carrier class alone explains ~98% of dispatch lead-time variation. <b>No claim of ML predictive superiority is made.</b> Ridge Regression is retained strictly as a continuous regularized spatial surface for counterfactual distance modeling.
+        </div>
+        """)
 
     p_col1, p_col2 = st.columns(2, gap="medium")
     with p_col1:
-        st.markdown('<div class="nassau-card">', unsafe_allow_html=True)
-        st.markdown("""
-        <div class="panel-header-strip">
-            <div class="panel-title-group">
-                <span class="panel-icon-badge">🎯</span>
-                <div>
-                    <div class="panel-heading-title">Chronological Holdout: Actual vs Predicted</div>
-                    <div class="panel-heading-sub">2,039 unobserved orders evaluated along ideal 45° line</div>
+        with st.container(border=True):
+            render_safe_html("""
+            <div class="panel-header-strip">
+                <div class="panel-title-group">
+                    <span class="panel-icon-badge">🎯</span>
+                    <div>
+                        <div class="panel-heading-title">Chronological Holdout: Actual vs Predicted</div>
+                        <div class="panel-heading-sub">2,039 unobserved orders evaluated along ideal 45° line</div>
+                    </div>
                 </div>
             </div>
-        </div>
-        """, unsafe_allow_html=True)
-        
-        # Genuine sample predictions for visualization
-        y_test = df['lead_time_days'].iloc[-120:].tolist()
-        y_pred = [max(0.04, y + np.random.normal(0, 0.4)) for y in y_test]
-        fig_scatter = create_actual_vs_predicted_chart(y_test, y_pred)
-        st.plotly_chart(fig_scatter, use_container_width=True, config={'displayModeBar': False})
-        st.markdown('</div>', unsafe_allow_html=True)
+            """)
+            
+            # Genuine sample predictions for visualization
+            y_test = df['lead_time_days'].iloc[-120:].tolist()
+            y_pred = [max(0.04, y + np.random.normal(0, 0.4)) for y in y_test]
+            fig_scatter = create_actual_vs_predicted_chart(y_test, y_pred)
+            st.plotly_chart(fig_scatter, use_container_width=True, config={'displayModeBar': False})
 
     with p_col2:
-        st.markdown('<div class="nassau-card">', unsafe_allow_html=True)
-        st.markdown("""
-        <div class="panel-header-strip">
-            <div class="panel-title-group">
-                <span class="panel-icon-badge">⚖️</span>
-                <div>
-                    <div class="panel-heading-title">Feature Importance & Model Coefficients</div>
-                    <div class="panel-heading-sub">Carrier service class dominates lead-time determination</div>
+        with st.container(border=True):
+            render_safe_html("""
+            <div class="panel-header-strip">
+                <div class="panel-title-group">
+                    <span class="panel-icon-badge">⚖️</span>
+                    <div>
+                        <div class="panel-heading-title">Feature Importance & Model Coefficients</div>
+                        <div class="panel-heading-sub">Carrier service class dominates lead-time determination</div>
+                    </div>
                 </div>
             </div>
-        </div>
-        """, unsafe_allow_html=True)
-        fig_feat = create_feature_importance_chart(feature_importance)
-        st.plotly_chart(fig_feat, use_container_width=True, config={'displayModeBar': False})
-        st.markdown('</div>', unsafe_allow_html=True)
+            """)
+            fig_feat = create_feature_importance_chart(feature_importance)
+            st.plotly_chart(fig_feat, use_container_width=True, config={'displayModeBar': False})
 
     # Live ML Lead-Time Inference Console (Fulfilling Task 2A, 2E, and Task 4)
     with st.container(border=True):
@@ -1594,19 +1559,17 @@ elif selected_page == "Route Analytics":
 
     r_col1, r_col2 = st.columns([1.5, 1], gap="medium")
     with r_col1:
-        st.markdown('<div class="nassau-card">', unsafe_allow_html=True)
-        st.markdown("#### Transportation Corridor Clusters (K-Means)")
-        st.dataframe(clustered_routes[[
-            "Factory", "Destination_State", "Total_Orders", "Total_Volume", "Cluster_Archetype", "Efficiency_Status"
-        ]].head(12), use_container_width=True, hide_index=True)
-        st.markdown('</div>', unsafe_allow_html=True)
+        with st.container(border=True):
+            st.markdown("#### Transportation Corridor Clusters (K-Means)")
+            st.dataframe(clustered_routes[[
+                "Factory", "Destination_State", "Total_Orders", "Total_Volume", "Cluster_Archetype", "Efficiency_Status"
+            ]].head(12), use_container_width=True, hide_index=True)
 
     with r_col2:
-        st.markdown('<div class="nassau-card">', unsafe_allow_html=True)
-        st.markdown("#### Lead Time vs Freight Mileage")
-        fig_scatter = create_profit_vs_lead_time_scatter(df)
-        st.plotly_chart(fig_scatter, use_container_width=True, config={'displayModeBar': False})
-        st.markdown('</div>', unsafe_allow_html=True)
+        with st.container(border=True):
+            st.markdown("#### Lead Time vs Freight Mileage")
+            fig_scatter = create_profit_vs_lead_time_scatter(df)
+            st.plotly_chart(fig_scatter, use_container_width=True, config={'displayModeBar': False})
 
 
 # ===========================================================================
@@ -1625,24 +1588,23 @@ elif selected_page == "Product Intelligence":
     </div>
     """, unsafe_allow_html=True)
 
-    st.markdown('<div class="nassau-card">', unsafe_allow_html=True)
-    prod_summary = []
-    for prod, fac in DEFAULT_PRODUCT_ASSIGNMENTS.items():
-        sub_df = df[df["Product Name"] == prod]
-        cnt = len(sub_df)
-        avg_lt = sub_df["lead_time_days"].mean() if cnt > 0 else 0.0
-        div = PRODUCT_DIVISIONS.get(prod, "Chocolate")
-        prod_summary.append({
-            "Product SKU": prod,
-            "Division": div,
-            "Assigned Plant": fac,
-            "Historical Orders": cnt,
-            "Mean Lead Time": f"{avg_lt:.2f} days",
-            "Single Sourcing Risk": "Elevated" if cnt < 50 else "Standard"
-        })
+    with st.container(border=True):
+        prod_summary = []
+        for prod, fac in DEFAULT_PRODUCT_ASSIGNMENTS.items():
+            sub_df = df[df["Product Name"] == prod]
+            cnt = len(sub_df)
+            avg_lt = sub_df["lead_time_days"].mean() if cnt > 0 else 0.0
+            div = PRODUCT_DIVISIONS.get(prod, "Chocolate")
+            prod_summary.append({
+                "Product SKU": prod,
+                "Division": div,
+                "Assigned Plant": fac,
+                "Historical Orders": cnt,
+                "Mean Lead Time": f"{avg_lt:.2f} days",
+                "Single Sourcing Risk": "Elevated" if cnt < 50 else "Standard"
+            })
 
-    st.dataframe(pd.DataFrame(prod_summary), use_container_width=True, hide_index=True)
-    st.markdown('</div>', unsafe_allow_html=True)
+        st.dataframe(pd.DataFrame(prod_summary), use_container_width=True, hide_index=True)
 
 
 # ===========================================================================
@@ -1661,33 +1623,32 @@ elif selected_page == "Business Impact":
     </div>
     """, unsafe_allow_html=True)
 
-    st.markdown('<div class="nassau-card">', unsafe_allow_html=True)
-    st.markdown("""
-    <div class="panel-header-strip">
-        <div class="panel-title-group">
-            <span class="panel-icon-badge">💰</span>
-            <div>
-                <div class="panel-heading-title">Cost & Margin Sensitivity Parameters</div>
-                <div class="panel-heading-sub">Assumed marginal logistics rates applied across counterfactual evaluations</div>
+    with st.container(border=True):
+        render_safe_html("""
+        <div class="panel-header-strip">
+            <div class="panel-title-group">
+                <span class="panel-icon-badge">💰</span>
+                <div>
+                    <div class="panel-heading-title">Cost & Margin Sensitivity Parameters</div>
+                    <div class="panel-heading-sub">Assumed marginal logistics rates applied across counterfactual evaluations</div>
+                </div>
             </div>
         </div>
-    </div>
-    """, unsafe_allow_html=True)
+        """)
 
-    b_col1, b_col2, b_col3 = st.columns(3)
-    with b_col1:
-        st.metric("Assumed Transit Rate", "$0.20 / 1,000 km", "Per Order Unit")
-    with b_col2:
-        st.metric("Inventory Carrying Cost", "$0.08 / day", "Warehouse Holding")
-    with b_col3:
-        st.metric("Simulated Net Margin Impact", "+2.4% Average", "Top 10 Reallocations")
+        b_col1, b_col2, b_col3 = st.columns(3)
+        with b_col1:
+            st.metric("Assumed Transit Rate", "$0.20 / 1,000 km", "Per Order Unit")
+        with b_col2:
+            st.metric("Inventory Carrying Cost", "$0.08 / day", "Warehouse Holding")
+        with b_col3:
+            st.metric("Simulated Net Margin Impact", "+2.4% Average", "Top 10 Reallocations")
 
-    st.markdown("""
-    <div class="operational-limitation-banner" style="margin-top: 14px;">
-        * Notice: The cost models above use heuristic operational sensitivity assumptions ($0.20 per 1,000 km per unit; $0.08 per day holding cost). Actual savings must be validated against contracted carrier freight tariffs (FTL/LTL) prior to capital reallocation.
-    </div>
-    """, unsafe_allow_html=True)
-    st.markdown('</div>', unsafe_allow_html=True)
+        render_safe_html("""
+        <div class="operational-limitation-banner" style="margin-top: 14px;">
+            * Notice: The cost models above use heuristic operational sensitivity assumptions ($0.20 per 1,000 km per unit; $0.08 per day holding cost). Actual savings must be validated against contracted carrier freight tariffs (FTL/LTL) prior to capital reallocation.
+        </div>
+        """)
 
 
 # ===========================================================================
@@ -1706,13 +1667,12 @@ elif selected_page == "Data & Model Lab":
     </div>
     """, unsafe_allow_html=True)
 
-    st.markdown('<div class="nassau-card">', unsafe_allow_html=True)
-    st.markdown("#### Historical Dataset Profile (N = 10,194)")
-    st.json(data_audit)
+    with st.container(border=True):
+        st.markdown("#### Historical Dataset Profile (N = 10,194)")
+        st.json(data_audit)
 
-    st.markdown("#### Sample Cleaned Data Explorer")
-    st.dataframe(df.head(15), use_container_width=True)
-    st.markdown('</div>', unsafe_allow_html=True)
+        st.markdown("#### Sample Cleaned Data Explorer")
+        st.dataframe(df.head(15), use_container_width=True)
 
 
 # ===========================================================================
@@ -1731,16 +1691,15 @@ elif selected_page == "Executive Reports":
     </div>
     """, unsafe_allow_html=True)
 
-    st.markdown('<div class="nassau-card">', unsafe_allow_html=True)
-    all_recs = engine.generate_all_recommendations(priority_slider=70.0)
-    exec_summary_md = generate_executive_summary(metrics, all_recs)
-    
-    st.markdown(exec_summary_md)
+    with st.container(border=True):
+        all_recs = engine.generate_all_recommendations(priority_slider=70.0)
+        exec_summary_md = generate_executive_summary(metrics, all_recs)
+        
+        st.markdown(exec_summary_md)
 
-    st.download_button(
-        label="📥 Download Executive Briefing (Markdown)",
-        data=exec_summary_md.encode('utf-8'),
-        file_name="nassau_intelligence_executive_briefing.md",
-        mime="text/markdown"
-    )
-    st.markdown('</div>', unsafe_allow_html=True)
+        st.download_button(
+            label="📥 Download Executive Briefing (Markdown)",
+            data=exec_summary_md.encode('utf-8'),
+            file_name="nassau_intelligence_executive_briefing.md",
+            mime="text/markdown"
+        )
