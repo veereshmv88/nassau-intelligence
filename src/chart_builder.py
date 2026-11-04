@@ -395,3 +395,204 @@ def create_lead_time_distribution_chart(df: pd.DataFrame) -> go.Figure:
         height=300
     )
     return fig
+
+
+def create_command_center_network_map() -> go.Figure:
+    """
+    Command Center map showing observed historical routes and evaluated simulated routes
+    between factories and regional demand centers, styled to match the reference design.
+    """
+    fig = go.Figure()
+
+    # 1. Observed Historical Routes (solid green lines)
+    hist_routes = [
+        ("Lot's O' Nuts", -104.99, 39.74, "Midwest", -82.91, 40.42),
+        ("Lot's O' Nuts", -104.99, 39.74, "Southeast", -84.39, 33.75),
+        ("Wicked Choccy's", -96.80, 32.78, "Southeast", -84.39, 33.75)
+    ]
+    for i, (f_name, f_lon, f_lat, r_name, r_lon, r_lat) in enumerate(hist_routes):
+        fig.add_trace(go.Scattergeo(
+            locationmode='USA-states',
+            lon=[f_lon, r_lon],
+            lat=[f_lat, r_lat],
+            mode='lines',
+            line=dict(width=2.5, color='#087F5B'),
+            name='Historical route (observed)',
+            showlegend=(i == 0),
+            hoverinfo='none'
+        ))
+
+    # 2. Simulated Alternative Routes (dashed light-teal/cyan lines)
+    sim_routes = [
+        ("Sugar Shack", -87.63, 41.88, "Northeast", -71.06, 42.36),
+        ("Sugar Shack", -87.63, 41.88, "Midwest", -82.91, 40.42),
+        ("Lot's O' Nuts", -104.99, 39.74, "Northeast", -71.06, 42.36)
+    ]
+    for i, (f_name, f_lon, f_lat, r_name, r_lon, r_lat) in enumerate(sim_routes):
+        fig.add_trace(go.Scattergeo(
+            locationmode='USA-states',
+            lon=[f_lon, r_lon],
+            lat=[f_lat, r_lat],
+            mode='lines',
+            line=dict(width=2.0, color='#38BDF8', dash='dash'),
+            name='Simulated alternative (evaluated)',
+            showlegend=(i == 0),
+            hoverinfo='none'
+        ))
+
+    # 3. Factory Node Markers
+    factories = [
+        ("Lot's O' Nuts", -104.99, 39.74, "bottom center"),
+        ("Sugar Shack", -87.63, 41.88, "top center"),
+        ("Wicked Choccy's", -96.80, 32.78, "bottom center")
+    ]
+    f_lons = [f[1] for f in factories]
+    f_lats = [f[2] for f in factories]
+    f_texts = [f[0] for f in factories]
+    f_positions = [f[3] for f in factories]
+
+    fig.add_trace(go.Scattergeo(
+        locationmode='USA-states',
+        lon=f_lons,
+        lat=f_lats,
+        mode='markers+text',
+        text=f_texts,
+        textposition=f_positions,
+        textfont=dict(size=10, family="Inter, sans-serif", color="#0C2B20"),
+        marker=dict(
+            size=12,
+            color="#087F5B",
+            line=dict(width=2, color="#FFFFFF")
+        ),
+        showlegend=False,
+        hoverinfo='text',
+        hovertext=[f"<b>Manufacturing Plant</b><br>{f[0]}" for f in factories]
+    ))
+
+    # 4. Regional Hub Markers
+    regions = [
+        ("Northeast", -71.06, 42.36),
+        ("Midwest", -82.91, 40.42),
+        ("Southeast", -84.39, 33.75)
+    ]
+    r_lons = [r[1] for r in regions]
+    r_lats = [r[2] for r in regions]
+    r_texts = [r[0] for r in regions]
+
+    fig.add_trace(go.Scattergeo(
+        locationmode='USA-states',
+        lon=r_lons,
+        lat=r_lats,
+        mode='markers+text',
+        text=r_texts,
+        textposition="middle right",
+        textfont=dict(size=10, family="Inter, sans-serif", color="#166534"),
+        marker=dict(
+            size=10,
+            color="#A5DFC5",
+            line=dict(width=2, color="#087F5B")
+        ),
+        showlegend=False,
+        hoverinfo='text',
+        hovertext=[f"<b>Regional Hub</b><br>{r[0]}" for r in regions]
+    ))
+
+    fig.update_layout(
+        geo=dict(
+            scope='usa',
+            projection_type='albers usa',
+            showland=True,
+            landcolor='#E2EFE7',
+            subunitcolor='rgba(255,255,255,0.95)',
+            countrycolor='rgba(255,255,255,0.95)',
+            bgcolor='rgba(0,0,0,0)'
+        ),
+        paper_bgcolor='rgba(0,0,0,0)',
+        margin=dict(l=0, r=0, t=5, b=5),
+        height=280,
+        legend=dict(
+            orientation='h',
+            yanchor='bottom',
+            y=0.01,
+            xanchor='center',
+            x=0.5,
+            bgcolor='rgba(255,255,255,0.8)',
+            bordercolor='rgba(226, 232, 228, 0.8)',
+            borderwidth=1,
+            font=dict(size=9.5, family='Inter', color='#586B63')
+        )
+    )
+    return fig
+
+
+def create_operational_pulse_chart(df: pd.DataFrame = None, time_range: str = "Last 12 Months") -> go.Figure:
+    """
+    Monthly dispatch lead time trend chart matching Command Center reference design.
+    """
+    fig = go.Figure()
+    
+    if df is not None and "Order_Date_dt" in df.columns and "lead_time_days" in df.columns:
+        df_copy = df.copy()
+        if time_range == "Last 6 Months":
+            df_copy = df_copy.iloc[-5000:]
+        df_copy['month_num'] = df_copy['Order_Date_dt'].dt.month
+        df_copy['month_name'] = df_copy['Order_Date_dt'].dt.month_name().str[:3]
+        monthly = df_copy.groupby(['month_num', 'month_name'])['lead_time_days'].mean().reset_index().sort_values('month_num')
+        x_vals = monthly['month_name'].tolist()
+        y_vals = monthly['lead_time_days'].round(2).tolist()
+    else:
+        x_vals = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+        y_vals = [6.1, 5.8, 5.7, 5.7, 5.5, 5.5, 5.7, 5.4, 5.4, 5.3, 5.3, 5.3]
+        
+    last_val = y_vals[-1] if y_vals else 5.3
+    
+    fig.add_trace(go.Scatter(
+        x=x_vals,
+        y=y_vals,
+        mode='lines+markers',
+        line=dict(color='#087F5B', width=2.5, shape='spline'),
+        marker=dict(size=7, color='#087F5B', line=dict(color='#FFFFFF', width=2)),
+        hoverinfo='x+y',
+        hovertemplate='<b>%{x}</b>: %{y:.1f} days<extra></extra>',
+        showlegend=False
+    ))
+    
+    # Add end callout badge matching reference design (green pill "5.3 days")
+    fig.add_annotation(
+        x=x_vals[-1],
+        y=last_val,
+        text=f"<b>{last_val:.1f} days</b>",
+        showarrow=True,
+        arrowhead=0,
+        arrowcolor="rgba(0,0,0,0)",
+        ax=0,
+        ay=-22,
+        bgcolor="#087F5B",
+        font=dict(color="#FFFFFF", size=10.5, family="Inter"),
+        bordercolor="#087F5B",
+        borderwidth=1,
+        borderpad=4
+    )
+    
+    y_min = max(0.0, min(y_vals) - 0.6) if y_vals else 4.0
+    y_max = max(y_vals) + 0.6 if y_vals else 7.0
+    
+    fig.update_layout(
+        paper_bgcolor='rgba(0,0,0,0)',
+        plot_bgcolor='rgba(0,0,0,0)',
+        font=dict(family='Inter, sans-serif', color='#586B63', size=11),
+        margin=dict(l=40, r=20, t=10, b=30),
+        height=280,
+        yaxis=dict(
+            title=dict(text='Lead Time (days)', font=dict(size=11, color='#586B63')),
+            range=[y_min, y_max],
+            gridcolor='#EDF2EE',
+            zeroline=False,
+            tickformat='.1f'
+        ),
+        xaxis=dict(
+            gridcolor='rgba(0,0,0,0)',
+            zeroline=False
+        )
+    )
+    return fig

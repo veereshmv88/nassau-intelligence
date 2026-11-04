@@ -79,3 +79,4 @@ def test_priority_slider_influences_weighting(engine):
     )
     assert sim_cost is not None
     assert sim_speed is not None
+
