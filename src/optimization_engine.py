@@ -14,6 +14,7 @@ from src.config import (
 )
 from src.prediction_service import LeadTimePredictor
 from src.data_loader import load_raw_data, prepare_dataset
+from src.recommendation_contract import normalize_recommendations_list, normalize_recommendation
 try:
     from src.db.repositories import FactoryRepository, ProductRepository, RecommendationRepository
 except ImportError:
@@ -412,7 +413,7 @@ class OptimizationEngine:
             "Operationally infeasible": 0
         }
         recs.sort(key=lambda x: (category_order.get(x["Category"], 0), x["Composite Score"]), reverse=True)
-        return recs
+        return normalize_recommendations_list(recs)
 
     def sync_recommendations_to_db(self, priority_slider: float = 70.0) -> int:
         """

@@ -34,6 +34,10 @@ from src.chart_builder import (
     create_profit_vs_lead_time_scatter, create_feature_importance_chart,
     create_actual_vs_predicted_chart, create_lead_time_distribution_chart
 )
+from src.recommendation_contract import (
+    build_recommendations_dataframe, DEFAULT_SUMMARY_COLUMNS,
+    SUMMARY_COLUMN_RENAME, DEFAULT_FULL_COLUMNS
+)
 try:
     from src.db.repositories import (
         OrderRepository, ProductRepository, FactoryRepository,
@@ -426,12 +430,15 @@ if selected_page == "Command Center":
         """, unsafe_allow_html=True)
         
         all_recs = engine.generate_all_recommendations(priority_slider=70.0)
-        recs_df = pd.DataFrame(all_recs[:6])[[
-            "Product Name", "Current Factory", "Recommended Factory", 
-            "Destination Region", "Recommendation Category", "Expected Lead Time Reduction (%)"
-        ]]
-        recs_df.columns = ["Product SKU", "Current Plant", "Candidate Plant", "Market", "Category", "Est. Delta (%)"]
-        st.dataframe(recs_df, use_container_width=True, hide_index=True)
+        recs_df = build_recommendations_dataframe(
+            all_recs[:6] if all_recs else [],
+            columns=DEFAULT_SUMMARY_COLUMNS,
+            rename_map=SUMMARY_COLUMN_RENAME
+        )
+        if recs_df.empty:
+            st.info("ℹ No priority reallocation opportunities match current operational thresholds.")
+        else:
+            st.dataframe(recs_df, use_container_width=True, hide_index=True)
         st.markdown("""
         <div class="operational-limitation-banner">
             * Operational Notice: Reallocation benefits are simulated estimates, not verified operational savings. Validate candidates through a controlled 90-day pilot.
@@ -1003,11 +1010,17 @@ elif selected_page == "Factory Optimization":
         st.markdown('<div class="nassau-card">', unsafe_allow_html=True)
         st.markdown("#### Complete Reassignment Sourcing Matrix")
         all_recs = engine.generate_all_recommendations(priority_slider=70.0)
-        recs_full = pd.DataFrame(all_recs)[[
-            "Product Name", "Current Factory", "Recommended Factory",
-            "Destination Region", "Recommendation Category", "Confidence Score", "Optimization Rationale"
-        ]]
-        st.dataframe(recs_full, use_container_width=True, hide_index=True)
+        recs_full = build_recommendations_dataframe(
+            all_recs,
+            columns=[
+                "Product Name", "Current Factory", "Recommended Factory",
+                "Destination Region", "Recommendation Category", "Confidence Score", "Optimization Rationale"
+            ]
+        )
+        if recs_full.empty:
+            st.info("ℹ No reassignment sourcing recommendations available.")
+        else:
+            st.dataframe(recs_full, use_container_width=True, hide_index=True)
         st.markdown('</div>', unsafe_allow_html=True)
 
 
@@ -1131,14 +1144,22 @@ elif selected_page == "Decision Center":
             synced = engine.sync_recommendations_to_db()
             st.success(f"Persisted {synced} recommendations to SQLite database.")
 
-    filtered_recs = all_recs if cat_filter == "All Categories" else [r for r in all_recs if r["Recommendation Category"] == cat_filter]
+    filtered_recs = all_recs if cat_filter == "All Categories" else [
+        r for r in all_recs 
+        if r.get("Recommendation Category") == cat_filter or 
+           r.get("Category") == cat_filter or 
+           r.get("evidential_category") == cat_filter
+    ]
     
     cols_to_show = [
         "Recommendation ID", "Product Name", "Current Factory", "Recommended Factory", 
         "Destination Region", "Recommendation Category", "Confidence Score", "Capacity Feasible", "Optimization Rationale"
     ]
-    recs_display = pd.DataFrame(filtered_recs)[cols_to_show]
-    st.dataframe(recs_display, use_container_width=True, hide_index=True)
+    recs_display = build_recommendations_dataframe(filtered_recs, columns=cols_to_show)
+    if recs_display.empty:
+        st.info("ℹ No recommendations found matching the selected evidential certainty category.")
+    else:
+        st.dataframe(recs_display, use_container_width=True, hide_index=True)
 
     csv_data = recs_display.to_csv(index=False).encode('utf-8')
     st.download_button(

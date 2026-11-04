@@ -7,6 +7,7 @@ Recommendations, Scenarios, and Model Evaluations.
 import sqlite3
 from typing import List, Dict, Any, Optional
 from src.db.connection import get_db_connection
+from src.recommendation_contract import normalize_recommendations_list, normalize_recommendation
 
 
 class OrderRepository:
@@ -233,7 +234,8 @@ class RecommendationRepository:
 
             query += " ORDER BY r.priority_rank ASC;"
             cursor.execute(query, params)
-            return [dict(row) for row in cursor.fetchall()]
+            raw_rows = [dict(row) for row in cursor.fetchall()]
+            return normalize_recommendations_list(raw_rows)
 
     @staticmethod
     def replace_all_recommendations(recs: List[Dict[str, Any]]):

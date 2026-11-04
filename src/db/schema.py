@@ -221,3 +221,4 @@ def _execute_schema(conn: sqlite3.Connection):
         cursor.execute(idx)
     cursor.close()
     logger.info("Nassau relational schema and indexes verified successfully.")
+
