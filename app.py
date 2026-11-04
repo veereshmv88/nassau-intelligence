@@ -34,6 +34,16 @@ from src.chart_builder import (
     create_profit_vs_lead_time_scatter, create_feature_importance_chart,
     create_actual_vs_predicted_chart, create_lead_time_distribution_chart
 )
+try:
+    from src.db.repositories import (
+        OrderRepository, ProductRepository, FactoryRepository,
+        RecommendationRepository, ScenarioRepository, ModelEvaluationRepository,
+        AuditRepository
+    )
+except ImportError:
+    OrderRepository = ProductRepository = FactoryRepository = None
+    RecommendationRepository = ScenarioRepository = ModelEvaluationRepository = None
+    AuditRepository = None
 
 # ---------------------------------------------------------------------------
 # Streamlit Page Setup
@@ -95,14 +105,34 @@ def get_cached_feature_importance(feat_mtime: float):
             return json.load(f)
     return {}
 
-# Initialize session state for user-saved scenarios
+# Initialize session state for user-saved scenarios (from SQLite if available)
 if "saved_scenarios" not in st.session_state:
-    st.session_state["saved_scenarios"] = [
-        {"Product": "Wonka Bar - Milk Chocolate", "Region": "Atlantic", "Current": "Wicked Choccy's", "Recommended": "Secret Factory", "Lead Time Delta": "-0.04 days", "Profit Impact": "+2.4%"},
-        {"Product": "Almond Joy", "Region": "Interior", "Current": "Lot's O' Nuts", "Recommended": "Wicked Choccy's", "Lead Time Delta": "-0.04 days", "Profit Impact": "+1.8%"},
-        {"Product": "Twix Miniatures", "Region": "Gulf", "Current": "Secret Factory", "Recommended": "Wicked Choccy's", "Lead Time Delta": "-0.03 days", "Profit Impact": "+1.5%"},
-        {"Product": "Kit Kat", "Region": "Pacific", "Current": "Wicked Choccy's", "Recommended": "Lot's O' Nuts", "Lead Time Delta": "-0.05 days", "Profit Impact": "+3.1%"}
-    ]
+    loaded_from_db = False
+    if ScenarioRepository:
+        try:
+            db_scens = ScenarioRepository.get_saved_scenarios(limit=10)
+            if db_scens:
+                st.session_state["saved_scenarios"] = [
+                    {
+                        "Product": s["product_name"],
+                        "Region": s["destination_region"],
+                        "Current": s["current_factory"],
+                        "Recommended": s["recommended_factory"],
+                        "Lead Time Delta": f"-{abs(s['lead_time_delta']):.2f}d",
+                        "Profit Impact": f"+{abs(s['profit_impact_pct']):.1f}%"
+                    }
+                    for s in db_scens
+                ]
+                loaded_from_db = True
+        except Exception:
+            pass
+    if not loaded_from_db:
+        st.session_state["saved_scenarios"] = [
+            {"Product": "Wonka Bar - Milk Chocolate", "Region": "Atlantic", "Current": "Wicked Choccy's", "Recommended": "Secret Factory", "Lead Time Delta": "-0.04 days", "Profit Impact": "+2.4%"},
+            {"Product": "Wonka Bar - Nutty Crunch Surprise", "Region": "Interior", "Current": "Lot's O' Nuts", "Recommended": "Wicked Choccy's", "Lead Time Delta": "-0.04 days", "Profit Impact": "+1.8%"},
+            {"Product": "Wonka Bar - Fudge Mallows", "Region": "Gulf", "Current": "Secret Factory", "Recommended": "Wicked Choccy's", "Lead Time Delta": "-0.03 days", "Profit Impact": "+1.5%"},
+            {"Product": "Wonka Bar - Triple Dazzle Caramel", "Region": "Pacific", "Current": "Wicked Choccy's", "Recommended": "Lot's O' Nuts", "Lead Time Delta": "-0.05 days", "Profit Impact": "+3.1%"}
+        ]
 
 # Default active factory in results table
 if "selected_factory_idx" not in st.session_state:
@@ -739,7 +769,10 @@ elif selected_page == "Factory Optimization":
                 is_cur = f["is_current"]
                 is_rec = f["is_recommended"]
                 
-                wl_num, bar_col = plant_workloads.get(f_name, (68, "bar-green"))
+                wl_num = f.get("workload_pct", plant_workloads.get(f_name, (68, "bar-green"))[0])
+                bar_col = "bar-amber" if wl_num > 78 else "bar-green"
+                cap_status = f.get("capacity_status", "✓ Feasible")
+                cap_color = "#087F5B" if "✓" in cap_status else "#DC2626"
                 
                 # Badge string
                 if is_rec:
@@ -787,7 +820,7 @@ elif selected_page == "Factory Optimization":
                         </div>
                         {badge_str}
                     </td>
-                    <td><span class="lead-time-value">{f['predicted_lead_time']:.1f} days</span></td>
+                    <td><span class="lead-time-value" title="{f.get('interval_str', '')}">{f['predicted_lead_time']:.1f} days</span></td>
                     <td>{delta_str}</td>
                     <td>{f['distance_km']:,} km</td>
                     <td>
@@ -798,7 +831,7 @@ elif selected_page == "Factory Optimization":
                             </div>
                         </div>
                     </td>
-                    <td><span style="color: #087F5B; font-weight: 700; font-size: 11.5px;">✓ Feasible</span></td>
+                    <td><span style="color: {cap_color}; font-weight: 700; font-size: 11.5px;">{cap_status}</span></td>
                     <td>{ev_pill}</td>
                 </tr>
                 """
@@ -837,7 +870,11 @@ elif selected_page == "Factory Optimization":
             
             lt_sub = f"↓ {abs(best_f['lead_time_reduction_pct']):.1f}% vs current" if best_f['lead_time_delta'] >= 0 else f"↑ {abs(best_f['lead_time_reduction_pct']):.1f}% vs current"
             
-            best_wl, _ = plant_workloads.get(best_f['factory'], (68, "bar-green"))
+            best_wl = best_f.get("workload_pct", plant_workloads.get(best_f['factory'], (68, "bar-green"))[0])
+            is_feasible = best_f.get("capacity_feasible", True)
+            feasibility_color = "#087F5B" if is_feasible else "#DC2626"
+            feasibility_text = "Yes" if is_feasible else "No"
+            feasibility_sub = "(Within Capacity)" if is_feasible else f"({best_f.get('capacity_status', 'Infeasible')})"
 
             st.markdown(f"""
             <div class="kpi-row-grid">
@@ -869,8 +906,8 @@ elif selected_page == "Factory Optimization":
                     <div class="kpi-icon-bubble">🛡️</div>
                     <div>
                         <div class="kpi-meta-title">Feasibility</div>
-                        <div class="kpi-stat-value" style="color: #087F5B;">Yes</div>
-                        <div class="kpi-sub-delta" style="color: #586B63;">(Within Capacity)</div>
+                        <div class="kpi-stat-value" style="color: {feasibility_color};">{feasibility_text}</div>
+                        <div class="kpi-sub-delta" style="color: #586B63;">{feasibility_sub}</div>
                     </div>
                 </div>
             </div>
@@ -1004,6 +1041,8 @@ elif selected_page == "Scenario Analysis":
     best_opt = sc_res["factories"][0]
 
     if save_sc_btn:
+        import uuid
+        from datetime import datetime
         st.session_state["saved_scenarios"].insert(0, {
             "Product": sc_sku,
             "Region": sc_dest,
@@ -1012,7 +1051,35 @@ elif selected_page == "Scenario Analysis":
             "Lead Time Delta": f"-{abs(best_opt['lead_time_delta']):.2f}d",
             "Profit Impact": f"+{abs(best_opt['profit_impact_pct']):.1f}%"
         })
-        st.success("Scenario appended to active comparison ledger.")
+        if ScenarioRepository and ProductRepository and FactoryRepository:
+            try:
+                prod = ProductRepository.get_product_by_name(sc_sku)
+                cur_f = FactoryRepository.get_factory_by_name(sc_res["baseline_factory"])
+                rec_f = FactoryRepository.get_factory_by_name(best_opt["factory"])
+                if prod and cur_f and rec_f:
+                    ScenarioRepository.save_scenario({
+                        "scenario_id": f"SCEN-{uuid.uuid4().hex[:8].upper()}",
+                        "created_at": datetime.now().isoformat(),
+                        "product_id": prod["product_id"],
+                        "destination_region": sc_dest,
+                        "ship_mode": "Standard Class",
+                        "batch_units": 2,
+                        "priority_slider": float(sc_slider),
+                        "baseline_factory_id": cur_f["factory_id"],
+                        "recommended_factory_id": rec_f["factory_id"],
+                        "baseline_lead_time": sc_res["baseline_lead_time"],
+                        "recommended_lead_time": best_opt["predicted_lead_time"],
+                        "lead_time_delta": best_opt["lead_time_delta"],
+                        "lead_time_reduction_pct": best_opt["lead_time_reduction_pct"],
+                        "distance_delta_km": float(best_opt["distance_km"] - sc_res["factories"][0]["distance_km"]),
+                        "profit_impact_pct": best_opt["profit_impact_pct"],
+                        "recommendation_category": best_opt["recommendation_category"],
+                        "confidence_score": best_opt["confidence_score"],
+                        "user_notes": "Saved from Scenario Analysis workspace"
+                    })
+            except Exception:
+                pass
+        st.success("Scenario appended to active comparison ledger and persisted to SQLite.")
 
     with sc_right:
         st.markdown('<div class="nassau-card">', unsafe_allow_html=True)
@@ -1052,18 +1119,25 @@ elif selected_page == "Decision Center":
     st.markdown('<div class="nassau-card">', unsafe_allow_html=True)
     all_recs = engine.generate_all_recommendations(priority_slider=70.0)
     
-    # 4 Category Filter Tabs
-    cat_filter = st.selectbox(
-        "Filter by Evidential Certainty",
-        ["All Categories", "Potential opportunity", "Needs validation", "Insufficient evidence", "Operationally infeasible"]
-    )
+    col_filter, col_sync = st.columns([3, 1], gap="medium")
+    with col_filter:
+        cat_filter = st.selectbox(
+            "Filter by Evidential Certainty",
+            ["All Categories", "Potential opportunity", "Needs validation", "Insufficient evidence", "Operationally infeasible"]
+        )
+    with col_sync:
+        st.markdown("<div style='height: 28px;'></div>", unsafe_allow_html=True)
+        if st.button("🔄 Resync to Database", use_container_width=True):
+            synced = engine.sync_recommendations_to_db()
+            st.success(f"Persisted {synced} recommendations to SQLite database.")
 
     filtered_recs = all_recs if cat_filter == "All Categories" else [r for r in all_recs if r["Recommendation Category"] == cat_filter]
     
-    recs_display = pd.DataFrame(filtered_recs)[[
-        "Product Name", "Current Factory", "Recommended Factory", 
-        "Destination Region", "Recommendation Category", "Confidence Score", "Optimization Rationale"
-    ]]
+    cols_to_show = [
+        "Recommendation ID", "Product Name", "Current Factory", "Recommended Factory", 
+        "Destination Region", "Recommendation Category", "Confidence Score", "Capacity Feasible", "Optimization Rationale"
+    ]
+    recs_display = pd.DataFrame(filtered_recs)[cols_to_show]
     st.dataframe(recs_display, use_container_width=True, hide_index=True)
 
     csv_data = recs_display.to_csv(index=False).encode('utf-8')

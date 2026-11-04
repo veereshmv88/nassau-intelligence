@@ -123,16 +123,18 @@ html, body, [data-testid="stAppViewContainer"] {
   margin-top: 3px;
 }
 
-/* Streamlit Radio Nav — Transformed into Native Pills */
-div[data-testid="stRadio"] > label {
+/* ==========================================================================
+   SIDEBAR RADIO NAVIGATION (TRANSFORMED INTO VERTICAL PILLS)
+   ========================================================================== */
+section[data-testid="stSidebar"] div[data-testid="stRadio"] > label {
   display: none !important;
 }
 
-div[data-testid="stRadio"] > div[role="radiogroup"] {
+section[data-testid="stSidebar"] div[data-testid="stRadio"] > div[role="radiogroup"] {
   gap: 4px !important;
 }
 
-div[data-testid="stRadio"] label[data-baseweb="radio"] {
+section[data-testid="stSidebar"] div[data-testid="stRadio"] label[data-baseweb="radio"] {
   width: 100% !important;
   padding: 8px 14px !important;
   border-radius: var(--radius-pill) !important;
@@ -142,13 +144,13 @@ div[data-testid="stRadio"] label[data-baseweb="radio"] {
   background: transparent !important;
 }
 
-/* Hide default radio circle */
-div[data-testid="stRadio"] label[data-baseweb="radio"] > div:first-child {
+/* Hide default radio circle in sidebar */
+section[data-testid="stSidebar"] div[data-testid="stRadio"] label[data-baseweb="radio"] > div:first-child {
   display: none !important;
 }
 
-/* Nav item typography */
-div[data-testid="stRadio"] label[data-baseweb="radio"] div[data-testid="stMarkdownContainer"] p {
+/* Sidebar Nav item typography */
+section[data-testid="stSidebar"] div[data-testid="stRadio"] label[data-baseweb="radio"] div[data-testid="stMarkdownContainer"] p {
   font-size: 13px !important;
   font-weight: 500 !important;
   color: var(--sidebar-text-muted) !important;
@@ -158,23 +160,92 @@ div[data-testid="stRadio"] label[data-baseweb="radio"] div[data-testid="stMarkdo
   gap: 10px !important;
 }
 
-/* Nav Item Hover State */
-div[data-testid="stRadio"] label[data-baseweb="radio"]:hover {
+/* Sidebar Nav Item Hover State */
+section[data-testid="stSidebar"] div[data-testid="stRadio"] label[data-baseweb="radio"]:hover {
   background: var(--sidebar-hover-bg) !important;
 }
 
-div[data-testid="stRadio"] label[data-baseweb="radio"]:hover div[data-testid="stMarkdownContainer"] p {
+section[data-testid="stSidebar"] div[data-testid="stRadio"] label[data-baseweb="radio"]:hover div[data-testid="stMarkdownContainer"] p {
   color: #FFFFFF !important;
 }
 
-/* ACTIVE NAV PILL — Mint background, Dark text */
-div[data-testid="stRadio"] label[data-baseweb="radio"]:has(input:checked) {
+/* SIDEBAR ACTIVE NAV PILL — Mint background, Dark text */
+section[data-testid="stSidebar"] div[data-testid="stRadio"] label[data-baseweb="radio"]:has(input:checked) {
   background: var(--sidebar-active-pill) !important;
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2) !important;
 }
 
-div[data-testid="stRadio"] label[data-baseweb="radio"]:has(input:checked) div[data-testid="stMarkdownContainer"] p {
+section[data-testid="stSidebar"] div[data-testid="stRadio"] label[data-baseweb="radio"]:has(input:checked) div[data-testid="stMarkdownContainer"] p {
   color: var(--sidebar-active-text) !important;
+  font-weight: 700 !important;
+}
+
+/* ==========================================================================
+   MAIN CANVAS SUB-NAVIGATION TABS (HORIZONTAL PILLS MATCHING REFERENCE)
+   ========================================================================== */
+div.main div[data-testid="stRadio"] > label {
+  display: none !important;
+}
+
+div.main div[data-testid="stRadio"] > div[role="radiogroup"] {
+  display: flex !important;
+  flex-direction: row !important;
+  flex-wrap: wrap !important;
+  gap: 8px !important;
+  margin-top: 4px !important;
+  margin-bottom: 14px !important;
+  align-items: center !important;
+}
+
+div.main div[data-testid="stRadio"] label[data-baseweb="radio"] {
+  width: auto !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  padding: 8px 18px !important;
+  border-radius: var(--radius-pill) !important;
+  margin: 0 !important;
+  cursor: pointer !important;
+  background: #FFFFFF !important;
+  border: 1px solid var(--surface-border) !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04) !important;
+  transition: all 180ms cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+/* Hide radio circle in main content tabs */
+div.main div[data-testid="stRadio"] label[data-baseweb="radio"] > div:first-child {
+  display: none !important;
+}
+
+/* Main Tab typography */
+div.main div[data-testid="stRadio"] label[data-baseweb="radio"] div[data-testid="stMarkdownContainer"] p {
+  font-size: 12.5px !important;
+  font-weight: 600 !important;
+  color: #475569 !important;
+  margin: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+}
+
+/* Main Tab Hover */
+div.main div[data-testid="stRadio"] label[data-baseweb="radio"]:hover {
+  background: #F8FAF9 !important;
+  border-color: #CBD5E1 !important;
+}
+
+div.main div[data-testid="stRadio"] label[data-baseweb="radio"]:hover div[data-testid="stMarkdownContainer"] p {
+  color: #0C2B20 !important;
+}
+
+/* MAIN ACTIVE SUB-NAV TAB — Deep Forest Green Pill with White Text */
+div.main div[data-testid="stRadio"] label[data-baseweb="radio"]:has(input:checked) {
+  background: #0C2B20 !important;
+  border-color: #0C2B20 !important;
+  box-shadow: 0 2px 8px rgba(12, 43, 32, 0.28) !important;
+}
+
+div.main div[data-testid="stRadio"] label[data-baseweb="radio"]:has(input:checked) div[data-testid="stMarkdownContainer"] p {
+  color: #FFFFFF !important;
   font-weight: 700 !important;
 }
 
