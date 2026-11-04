@@ -181,3 +181,25 @@ def test_app_imports_resolve():
     )
     # If we reach here, no ImportError was raised
     assert True
+
+
+def test_render_and_procfile_start_commands():
+    """
+    Guards against Render startup failure with 'gunicorn app:app' or WSGI.
+    Confirms both render.yaml and Procfile define the exact Streamlit entry point.
+    """
+    procfile_path = BASE_DIR / "Procfile"
+    assert procfile_path.exists(), "Procfile must exist in repository root for PaaS/Render fallback"
+    procfile_content = procfile_path.read_text(encoding="utf-8").strip()
+    assert "streamlit run src/app.py" in procfile_content, (
+        f"Procfile must contain 'streamlit run src/app.py', got: {procfile_content}"
+    )
+    assert "gunicorn" not in procfile_content.lower(), "Procfile must not reference gunicorn"
+
+    render_yaml_path = BASE_DIR / "render.yaml"
+    assert render_yaml_path.exists(), "render.yaml must exist in repository root"
+    render_yaml_content = render_yaml_path.read_text(encoding="utf-8")
+    assert "streamlit run src/app.py --server.port $PORT --server.address 0.0.0.0" in render_yaml_content, (
+        "render.yaml must define the exact Streamlit startCommand"
+    )
+    assert "gunicorn" not in render_yaml_content.lower(), "render.yaml must not reference gunicorn"
