@@ -540,14 +540,15 @@ div.main div[data-testid="stRadio"] label[data-baseweb="radio"]:has(input:checke
 /* ==========================================================================
    CARDS & PANELS (LEFT & RIGHT WORKSPACE)
    ========================================================================== */
-.nassau-card {
-  background: var(--surface-white);
-  border: 1px solid var(--surface-border);
-  border-radius: var(--radius-lg);
-  padding: 20px 22px;
-  box-shadow: var(--shadow-card);
-  margin-bottom: 16px;
-  position: relative;
+.nassau-card,
+div[data-testid="stVerticalBlockBorderWrapper"] > div {
+  background: var(--surface-white) !important;
+  border: 1px solid var(--surface-border) !important;
+  border-radius: var(--radius-lg) !important;
+  padding: 20px 22px !important;
+  box-shadow: var(--shadow-card) !important;
+  margin-bottom: 16px !important;
+  position: relative !important;
 }
 
 .panel-header-strip {

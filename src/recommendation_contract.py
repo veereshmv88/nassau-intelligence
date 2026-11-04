@@ -7,6 +7,7 @@ DataFrame construction across Engine, Database, Repositories, and Streamlit Dash
 from typing import Dict, Any, List, Optional
 import pandas as pd
 import numpy as np
+from src.domain_models import Recommendation
 
 
 # Standard column specifications for recommendation views
@@ -31,12 +32,14 @@ DEFAULT_FULL_COLUMNS = [
 ]
 
 
-def normalize_recommendation(rec: Dict[str, Any], index: int = 1) -> Dict[str, Any]:
+def normalize_recommendation(rec: Any, index: int = 1) -> Dict[str, Any]:
     """
     Normalize any recommendation dictionary (whether from database, engine, or legacy format)
     into a canonical dictionary containing both standardized snake_case and UI Title Case aliases.
     Preserves genuine values and uses honest default indicators for missing optional fields.
     """
+    if isinstance(rec, Recommendation):
+        return rec.to_display_dict()
     if not isinstance(rec, dict):
         return {}
 

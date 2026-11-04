@@ -286,6 +286,8 @@ class OptimizationEngine:
                 (weight_speed * speed_score + weight_profit * profit_score) * evidence_factor, 1
             )
             
+            is_feasible_cand = bool(is_capacity_feasible and is_eligible and cat != "Operationally infeasible")
+
             factory_evaluations.append({
                 "factory": f_name,
                 "current_factory": current_factory,
@@ -298,19 +300,26 @@ class OptimizationEngine:
                 "lead_time_delta": lead_time_delta,
                 "lead_time_reduction_pct": lead_time_reduction_pct,
                 "distance_km": distance_km,
+                "distance_delta_km": round(distance_km - baseline_distance, 1),
                 "estimated_profit_per_unit": est_profit_per_unit,
                 "profit_impact_pct": profit_impact_pct,
+                "speed_score": round(speed_score, 1),
+                "profit_score": round(profit_score, 1),
+                "evidence_factor": round(evidence_factor, 2),
                 "composite_score": composite_score,
                 "workload_pct": post_reallocation_workload,
                 "capacity_feasible": (is_capacity_feasible and is_eligible),
                 "capacity_status": capacity_status,
                 "tooling_eligible": is_eligible,
+                "tooling_note": tooling_note,
+                "is_feasible_candidate": is_feasible_cand,
                 "recommendation_category": cat,
                 "evidence_quality": ev["evidence_quality"],
                 "confidence_score": ev["confidence_score"],
                 "risk_level": ev["risk_level"],
                 "risk_flag": ev["risk_flag"],
                 "rationale": rationale,
+                "selection_justification": "",
                 "simulation_label": "Simulated estimate — not yet validated in production",
                 "city": opt["city"],
                 "state": opt["state"],
@@ -318,9 +327,53 @@ class OptimizationEngine:
                 "color": opt["color"]
             })
             
-        factory_evaluations.sort(key=lambda x: x["composite_score"], reverse=True)
-        best_option = factory_evaluations[0]
+        # Partition into strictly feasible candidates vs infeasible candidates
+        feasible_cands = [f for f in factory_evaluations if f["is_feasible_candidate"]]
+        infeasible_cands = [f for f in factory_evaluations if not f["is_feasible_candidate"]]
+        
+        # Sort each partition by composite score descending
+        feasible_cands.sort(key=lambda x: x["composite_score"], reverse=True)
+        infeasible_cands.sort(key=lambda x: x["composite_score"], reverse=True)
+        
+        # Combined ranking puts all feasible options ahead of infeasible ones
+        ranked_evaluations = feasible_cands + infeasible_cands
+        
+        # Champion selection: Must be feasible and top scoring
+        if feasible_cands:
+            best_option = feasible_cands[0]
+        else:
+            best_option = ranked_evaluations[0]
+            
         best_option["is_recommended"] = True
+        
+        # Generate transparent trade-off rationale
+        # Check if another candidate has nominally lower lead time
+        fastest_cand = min(ranked_evaluations, key=lambda x: x["predicted_lead_time"])
+        if fastest_cand["factory"] != best_option["factory"]:
+            lt_diff = round(best_option["predicted_lead_time"] - fastest_cand["predicted_lead_time"], 2)
+            dist_diff = int(fastest_cand["distance_km"] - best_option["distance_km"])
+            if not fastest_cand["is_feasible_candidate"]:
+                reason = f"Fastest simulated plant ({fastest_cand['factory']} at {fastest_cand['predicted_lead_time']:.1f}d) is disqualified due to operational infeasibility: {fastest_cand['rationale']}"
+            elif dist_diff > 0:
+                reason = (
+                    f"Selected {best_option['factory']} over {fastest_cand['factory']} despite nominal {lt_diff:.1f}d speed difference: "
+                    f"{best_option['factory']} saves {dist_diff:,} km freight haulage (+{best_option['profit_impact_pct']:.1f}% margin benefit) "
+                    f"with higher empirical volume reliability ({best_option['confidence_score']:.0f}% confidence vs {fastest_cand['confidence_score']:.0f}%)."
+                )
+            else:
+                reason = (
+                    f"Selected {best_option['factory']} based on composite score ({best_option['composite_score']} vs {fastest_cand['composite_score']}) "
+                    f"balancing dispatch latency, freight efficiency, and {best_option['evidence_quality']} empirical evidence."
+                )
+        else:
+            reason = f"Selected {best_option['factory']}: achieved lowest predicted dispatch lead time ({best_option['predicted_lead_time']:.1f} days) and highest composite score ({best_option['composite_score']})."
+            
+        best_option["selection_justification"] = reason
+        for f in ranked_evaluations:
+            if not f["selection_justification"]:
+                f["selection_justification"] = reason
+                
+        factory_evaluations = ranked_evaluations
         
         return {
             "product_name": product_name,
@@ -370,7 +423,8 @@ class OptimizationEngine:
                 
                 best = sim["factories"][0]
                 
-                if not best["is_current"]:
+                # Only include when not current factory and operationally feasible
+                if not best["is_current"] and best.get("capacity_feasible", True) and best.get("tooling_eligible", True) and best.get("recommendation_category") != "Operationally infeasible":
                     lt_pct = best["lead_time_reduction_pct"]
                     lt_delta_str = f"-{lt_pct:.1f}%" if lt_pct >= 0 else f"+{abs(lt_pct):.1f}%"
                     prof_pct = best["profit_impact_pct"]

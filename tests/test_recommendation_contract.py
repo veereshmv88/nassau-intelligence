@@ -199,3 +199,4 @@ def test_recommendation_repository_live_retrieval():
     assert len(df) == len(db_recs)
     assert "Market" in df.columns
     assert "Category" in df.columns
+

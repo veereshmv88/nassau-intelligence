@@ -79,6 +79,12 @@ def get_base64_image(image_path: str) -> str:
     return ""
 
 
+def render_safe_html(html_str: str):
+    """Safely render raw HTML in Streamlit without CommonMark code block conversion from 4-space indentation."""
+    cleaned = "\n".join(line.strip() for line in html_str.strip().splitlines())
+    st.html(cleaned)
+
+
 # ---------------------------------------------------------------------------
 # Data & Engine Caching
 # ---------------------------------------------------------------------------
@@ -645,8 +651,8 @@ elif selected_page == "Factory Optimization":
         col_cfg, col_res = st.columns([1.05, 1.95], gap="large")
 
         with col_cfg:
-            st.markdown("""
-            <div class="nassau-card">
+            with st.container(border=True):
+                render_safe_html("""
                 <div class="panel-header-strip">
                     <div class="panel-title-group">
                         <span class="panel-icon-badge">⚙️</span>
@@ -656,80 +662,79 @@ elif selected_page == "Factory Optimization":
                         </div>
                     </div>
                 </div>
-            """, unsafe_allow_html=True)
+                """)
 
-            # Product SKU Selector
-            sku_options = list(DEFAULT_PRODUCT_ASSIGNMENTS.keys())
-            # Format product with candy icons
-            def format_sku(sku):
-                div = PRODUCT_DIVISIONS.get(sku, "Chocolate")
-                icon = "🍫" if div == "Chocolate" else ("🍬" if div == "Sugar" else "🍭")
-                return f"{icon}  {sku}"
+                # Product SKU Selector
+                sku_options = list(DEFAULT_PRODUCT_ASSIGNMENTS.keys())
+                # Format product with candy icons
+                def format_sku(sku):
+                    div = PRODUCT_DIVISIONS.get(sku, "Chocolate")
+                    icon = "🍫" if div == "Chocolate" else ("🍬" if div == "Sugar" else "🍭")
+                    return f"{icon}  {sku}"
 
-            # Default to Wonka Bar - Nutty Crunch Surprise to match reference design exactly
-            default_sku_idx = sku_options.index("Wonka Bar - Nutty Crunch Surprise") if "Wonka Bar - Nutty Crunch Surprise" in sku_options else 0
-            
-            selected_sku = st.selectbox(
-                "Product SKU",
-                options=sku_options,
-                index=default_sku_idx,
-                format_func=format_sku
-            )
-
-            # Destination Market
-            market_keys = ["Pacific", "Interior", "Gulf", "Atlantic"]
-            market_labels = {
-                "Pacific": "📍 West (Pacific)",
-                "Interior": "📍 Central (Interior)",
-                "Gulf": "📍 South (Gulf)",
-                "Atlantic": "📍 East (Atlantic)"
-            }
-            selected_market = st.selectbox(
-                "Destination Market",
-                options=market_keys,
-                index=0, # Pacific matching reference design
-                format_func=lambda x: market_labels[x]
-            )
-
-            # Carrier Shipping Mode
-            mode_options = ["Standard Class", "Second Class", "First Class", "Same Day"]
-            selected_mode = st.selectbox(
-                "Carrier Shipping Mode",
-                options=mode_options,
-                index=0, # Standard Class
-                format_func=lambda x: f"🚚  {x}"
-            )
-
-            # Batch Units & Slider Row
-            s_col1, s_col2 = st.columns([1, 1.2], gap="small")
-            with s_col1:
-                batch_units = st.number_input(
-                    "Order Batch Units",
-                    min_value=1,
-                    max_value=50,
-                    value=2,
-                    step=1
-                )
-            with s_col2:
-                priority_val = st.slider(
-                    "Optimization Priority ⓘ",
-                    min_value=0,
-                    max_value=100,
-                    value=70,
-                    step=5,
-                    help="Determines balance between freight cost reduction (0) and dispatch delivery speed (100)."
+                # Default to Wonka Bar - Nutty Crunch Surprise to match reference design exactly
+                default_sku_idx = sku_options.index("Wonka Bar - Nutty Crunch Surprise") if "Wonka Bar - Nutty Crunch Surprise" in sku_options else 0
+                
+                selected_sku = st.selectbox(
+                    "Product SKU",
+                    options=sku_options,
+                    index=default_sku_idx,
+                    format_func=format_sku
                 )
 
-            st.markdown("""
-            <div style="display: flex; justify-content: space-between; font-size: 10px; color: #8E9F97; margin-top: -6px; margin-bottom: 16px;">
-                <span>0 Protect Margin</span>
-                <span>50 Balanced</span>
-                <span>100 Maximize Speed</span>
-            </div>
-            """, unsafe_allow_html=True)
+                # Destination Market
+                market_keys = ["Pacific", "Interior", "Gulf", "Atlantic"]
+                market_labels = {
+                    "Pacific": "📍 West (Pacific)",
+                    "Interior": "📍 Central (Interior)",
+                    "Gulf": "📍 South (Gulf)",
+                    "Atlantic": "📍 East (Atlantic)"
+                }
+                selected_market = st.selectbox(
+                    "Destination Market",
+                    options=market_keys,
+                    index=0, # Pacific matching reference design
+                    format_func=lambda x: market_labels[x]
+                )
 
-            run_clicked = st.button("▶  Run Optimization", use_container_width=True)
-            st.markdown('</div>', unsafe_allow_html=True)
+                # Carrier Shipping Mode
+                mode_options = ["Standard Class", "Second Class", "First Class", "Same Day"]
+                selected_mode = st.selectbox(
+                    "Carrier Shipping Mode",
+                    options=mode_options,
+                    index=0, # Standard Class
+                    format_func=lambda x: f"🚚  {x}"
+                )
+
+                # Batch Units & Slider Row
+                s_col1, s_col2 = st.columns([1, 1.2], gap="small")
+                with s_col1:
+                    batch_units = st.number_input(
+                        "Order Batch Units",
+                        min_value=1,
+                        max_value=50,
+                        value=2,
+                        step=1
+                    )
+                with s_col2:
+                    priority_val = st.slider(
+                        "Optimization Priority ⓘ",
+                        min_value=0,
+                        max_value=100,
+                        value=70,
+                        step=5,
+                        help="Determines balance between freight cost reduction (0) and dispatch delivery speed (100)."
+                    )
+
+                render_safe_html("""
+                <div style="display: flex; justify-content: space-between; font-size: 10px; color: #8E9F97; margin-top: -6px; margin-bottom: 16px;">
+                    <span>0 Protect Margin</span>
+                    <span>50 Balanced</span>
+                    <span>100 Maximize Speed</span>
+                </div>
+                """)
+
+                run_clicked = st.button("▶  Run Optimization", use_container_width=True)
 
         # Run Engine Calculation
         sim = engine.simulate_optimization(
@@ -741,8 +746,9 @@ elif selected_page == "Factory Optimization":
         )
 
         with col_res:
-            st.markdown("""
-            <div class="nassau-card">
+            with st.container(border=True):
+                eligible_count = len([f for f in sim["factories"] if f.get("is_feasible_candidate", f.get("capacity_feasible", True))])
+                render_safe_html(f"""
                 <div class="panel-header-strip">
                     <div class="panel-title-group">
                         <span class="panel-icon-badge">📊</span>
@@ -751,277 +757,297 @@ elif selected_page == "Factory Optimization":
                             <div class="panel-heading-sub">Predicted operational lead times and key metrics across eligible factories.</div>
                         </div>
                     </div>
-                    <span class="eligible-count-pill">3 Eligible Factories</span>
+                    <span class="eligible-count-pill">{eligible_count} Eligible Factories</span>
                 </div>
-            """, unsafe_allow_html=True)
+                """)
 
-            # Workload dictionary for visual progress bars
-            plant_workloads = {
-                "Lot's O' Nuts": (82, "bar-amber"),
-                "Wicked Choccy's": (74, "bar-green"),
-                "Secret Factory": (68, "bar-green"),
-                "The Other Factory": (62, "bar-green"),
-                "Sugar Shack": (54, "bar-green")
-            }
+                # Workload dictionary for visual progress bars
+                plant_workloads = {
+                    "Lot's O' Nuts": (82, "bar-amber"),
+                    "Wicked Choccy's": (74, "bar-green"),
+                    "Secret Factory": (68, "bar-green"),
+                    "The Other Factory": (62, "bar-green"),
+                    "Sugar Shack": (54, "bar-green")
+                }
 
-            # Filter top 3 eligible alternatives + current
-            eval_list = sim["factories"]
-            # Always ensure current and top recommendations are present
-            top_evals = eval_list[:3]
+                # Top 3 candidates + current
+                eval_list = sim["factories"]
+                top_evals = eval_list[:3]
 
-            # Custom Reference Table
-            table_rows_html = ""
-            for idx, f in enumerate(top_evals):
-                f_name = f["factory"]
-                is_cur = f["is_current"]
-                is_rec = f["is_recommended"]
-                
-                wl_num = f.get("workload_pct", plant_workloads.get(f_name, (68, "bar-green"))[0])
-                bar_col = "bar-amber" if wl_num > 78 else "bar-green"
-                cap_status = f.get("capacity_status", "✓ Feasible")
-                cap_color = "#087F5B" if "✓" in cap_status else "#DC2626"
-                
-                # Badge string
-                if is_rec:
-                    badge_str = '<div class="badge-recommended">Recommended</div>'
-                    row_class = 'row-recommended'
-                    radio_icon = '🔘'
-                elif is_cur:
-                    badge_str = '<div class="badge-current">(Current)</div>'
-                    row_class = ''
-                    radio_icon = '⚪'
-                else:
-                    badge_str = ''
-                    row_class = ''
-                    radio_icon = '⚪'
+                # Custom Reference Table
+                table_rows_html = ""
+                for idx, f in enumerate(top_evals):
+                    f_name = f["factory"]
+                    is_cur = f["is_current"]
+                    is_rec = f["is_recommended"]
                     
-                # Delta string
-                delta_days = f["lead_time_delta"]
-                delta_pct = f["lead_time_reduction_pct"]
-                if is_cur:
-                    delta_str = '<span class="delta-neutral">—</span>'
-                elif delta_days > 0:
-                    delta_str = f'<span class="delta-positive">-{delta_days:.1f} days<br>(-{abs(delta_pct):.1f}%)</span>'
-                elif delta_days == 0:
-                    delta_str = '<span class="delta-neutral">0.0 days<br>(0.0%)</span>'
-                else:
-                    delta_str = f'<span class="delta-negative">+{abs(delta_days):.1f} days<br>(+{abs(delta_pct):.1f}%)</span>'
+                    wl_num = f.get("workload_pct", plant_workloads.get(f_name, (68, "bar-green"))[0])
+                    bar_col = "bar-amber" if wl_num > 78 else "bar-green"
+                    cap_status = f.get("capacity_status", "✓ Feasible")
+                    cap_color = "#087F5B" if "✓" in cap_status else "#DC2626"
                     
-                # Evidence badge
-                ev_str = f["evidence_quality"]
-                if is_cur:
-                    ev_pill = '<span class="evidence-pill pill-observed">📑 Observed</span>'
-                elif ev_str == "High":
-                    ev_pill = '<span class="evidence-pill pill-high">📶 High</span>'
-                elif ev_str == "Medium":
-                    ev_pill = '<span class="evidence-pill pill-medium">📶 Medium</span>'
-                else:
-                    ev_pill = '<span class="evidence-pill pill-insufficient">⚠️ Insufficient</span>'
+                    # Badge string
+                    if is_rec:
+                        badge_str = '<div class="badge-recommended">Recommended</div>'
+                        row_class = 'row-recommended'
+                        radio_icon = '🔘'
+                    elif is_cur:
+                        badge_str = '<div class="badge-current">(Current)</div>'
+                        row_class = ''
+                        radio_icon = '⚪'
+                    else:
+                        badge_str = ''
+                        row_class = ''
+                        radio_icon = '⚪'
+                        
+                    # Delta string
+                    delta_days = f["lead_time_delta"]
+                    delta_pct = f["lead_time_reduction_pct"]
+                    if is_cur:
+                        delta_str = '<span class="delta-neutral">—</span>'
+                    elif delta_days > 0:
+                        delta_str = f'<span class="delta-positive">-{delta_days:.1f} days<br>(-{abs(delta_pct):.1f}%)</span>'
+                    elif delta_days == 0:
+                        delta_str = '<span class="delta-neutral">0.0 days<br>(0.0%)</span>'
+                    else:
+                        delta_str = f'<span class="delta-negative">+{abs(delta_days):.1f} days<br>(+{abs(delta_pct):.1f}%)</span>'
+                        
+                    # Evidence badge
+                    ev_str = f["evidence_quality"]
+                    if is_cur:
+                        ev_pill = '<span class="evidence-pill pill-observed">📑 Observed</span>'
+                    elif ev_str == "High":
+                        ev_pill = '<span class="evidence-pill pill-high">📶 High</span>'
+                    elif ev_str == "Medium":
+                        ev_pill = '<span class="evidence-pill pill-medium">📶 Medium</span>'
+                    else:
+                        ev_pill = '<span class="evidence-pill pill-insufficient">⚠️ Insufficient</span>'
 
-                table_rows_html += f"""
-                <tr class="{row_class}">
-                    <td style="width: 30px; text-align: center; color: #0C2B20; font-size: 14px;">{radio_icon}</td>
-                    <td>
-                        <div class="factory-cell-name">
-                            <span>{f_name}</span>
-                        </div>
-                        {badge_str}
-                    </td>
-                    <td><span class="lead-time-value" title="{f.get('interval_str', '')}">{f['predicted_lead_time']:.1f} days</span></td>
-                    <td>{delta_str}</td>
-                    <td>{f['distance_km']:,} km</td>
-                    <td>
-                        <div class="workload-cell">
-                            <span class="workload-text">{wl_num}%</span>
-                            <div class="workload-bar-track">
-                                <div class="workload-bar-fill {bar_col}" style="width: {wl_num}%;"></div>
-                            </div>
-                        </div>
-                    </td>
-                    <td><span style="color: {cap_color}; font-weight: 700; font-size: 11.5px;">{cap_status}</span></td>
-                    <td>{ev_pill}</td>
-                </tr>
-                """
-
-            st.markdown(f"""
-            <div class="results-table-container">
-                <table class="nassau-results-table">
-                    <thead>
-                        <tr>
-                            <th style="width: 30px;"></th>
-                            <th>Factory</th>
-                            <th>Pred. Lead Time ↓</th>
-                            <th>Δ vs Current</th>
-                            <th>Distance</th>
-                            <th>Workload</th>
-                            <th>Capacity</th>
-                            <th>Evidence</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {table_rows_html}
-                    </tbody>
-                </table>
+                    table_rows_html += f"""
+<tr class="{row_class}">
+    <td style="width: 30px; text-align: center; color: #0C2B20; font-size: 14px;">{radio_icon}</td>
+    <td>
+        <div class="factory-cell-name">
+            <span>{f_name}</span>
+        </div>
+        {badge_str}
+    </td>
+    <td><span class="lead-time-value" title="{f.get('interval_str', '')}">{f['predicted_lead_time']:.1f} days</span></td>
+    <td>{delta_str}</td>
+    <td>{f['distance_km']:,} km</td>
+    <td>
+        <div class="workload-cell">
+            <span class="workload-text">{wl_num}%</span>
+            <div class="workload-bar-track">
+                <div class="workload-bar-fill {bar_col}" style="width: {wl_num}%;"></div>
             </div>
-            """, unsafe_allow_html=True)
+        </div>
+    </td>
+    <td><span style="color: {cap_color}; font-weight: 700; font-size: 11.5px;">{cap_status}</span></td>
+    <td>{ev_pill}</td>
+</tr>
+"""
 
-            # KPI Summary Row (4 Compact Cards Matching Reference)
-            best_f = sim["factories"][0]
-            cur_f = [f for f in sim["factories"] if f["is_current"]][0]
-            
-            dist_delta = best_f["distance_km"] - cur_f["distance_km"]
-            dist_delta_pct = (dist_delta / max(1, cur_f["distance_km"])) * 100
-            
-            dist_str = f"-{abs(dist_delta):.0f} km" if dist_delta <= 0 else f"+{dist_delta:.0f} km"
-            dist_sub = f"↓ {abs(dist_delta_pct):.1f}%" if dist_delta <= 0 else f"↑ {dist_delta_pct:.1f}%"
-            
-            lt_sub = f"↓ {abs(best_f['lead_time_reduction_pct']):.1f}% vs current" if best_f['lead_time_delta'] >= 0 else f"↑ {abs(best_f['lead_time_reduction_pct']):.1f}% vs current"
-            
-            best_wl = best_f.get("workload_pct", plant_workloads.get(best_f['factory'], (68, "bar-green"))[0])
-            is_feasible = best_f.get("capacity_feasible", True)
-            feasibility_color = "#087F5B" if is_feasible else "#DC2626"
-            feasibility_text = "Yes" if is_feasible else "No"
-            feasibility_sub = "(Within Capacity)" if is_feasible else f"({best_f.get('capacity_status', 'Infeasible')})"
+                table_html = f"""
+<div class="results-table-container">
+    <table class="nassau-results-table">
+        <thead>
+            <tr>
+                <th style="width: 30px;"></th>
+                <th>Factory</th>
+                <th>Pred. Lead Time ↓</th>
+                <th>Δ vs Current</th>
+                <th>Distance</th>
+                <th>Workload</th>
+                <th>Capacity</th>
+                <th>Evidence</th>
+            </tr>
+        </thead>
+        <tbody>
+            {table_rows_html}
+        </tbody>
+    </table>
+</div>
+"""
+                render_safe_html(table_html)
 
-            st.markdown(f"""
-            <div class="kpi-row-grid">
-                <div class="kpi-mini-card">
-                    <div class="kpi-icon-bubble">⏱️</div>
-                    <div>
-                        <div class="kpi-meta-title">Best Lead Time</div>
-                        <div class="kpi-stat-value">{best_f['predicted_lead_time']:.1f} days</div>
-                        <div class="kpi-sub-delta">{lt_sub}</div>
-                    </div>
-                </div>
-                <div class="kpi-mini-card">
-                    <div class="kpi-icon-bubble">🚚</div>
-                    <div>
-                        <div class="kpi-meta-title">Distance Change</div>
-                        <div class="kpi-stat-value">{dist_str}</div>
-                        <div class="kpi-sub-delta">{dist_sub}</div>
-                    </div>
-                </div>
-                <div class="kpi-mini-card">
-                    <div class="kpi-icon-bubble">🏭</div>
-                    <div>
-                        <div class="kpi-meta-title">Workload ({best_f['factory'][:9]})</div>
-                        <div class="kpi-stat-value">{best_wl}%</div>
-                        <div class="kpi-sub-delta" style="color: #586B63;">Balanced Distribution</div>
-                    </div>
-                </div>
-                <div class="kpi-mini-card">
-                    <div class="kpi-icon-bubble">🛡️</div>
-                    <div>
-                        <div class="kpi-meta-title">Feasibility</div>
-                        <div class="kpi-stat-value" style="color: {feasibility_color};">{feasibility_text}</div>
-                        <div class="kpi-sub-delta" style="color: #586B63;">{feasibility_sub}</div>
-                    </div>
-                </div>
+                # KPI Summary Row (4 Compact Cards Matching Reference)
+                best_f = sim["factories"][0]
+                cur_f = [f for f in sim["factories"] if f["is_current"]][0]
+                
+                dist_delta = best_f["distance_km"] - cur_f["distance_km"]
+                dist_delta_pct = (dist_delta / max(1, cur_f["distance_km"])) * 100
+                
+                dist_str = f"-{abs(dist_delta):.0f} km" if dist_delta <= 0 else f"+{dist_delta:.0f} km"
+                dist_sub = f"↓ {abs(dist_delta_pct):.1f}%" if dist_delta <= 0 else f"↑ {dist_delta_pct:.1f}%"
+                
+                lt_sub = f"↓ {abs(best_f['lead_time_reduction_pct']):.1f}% vs current" if best_f['lead_time_delta'] >= 0 else f"↑ {abs(best_f['lead_time_reduction_pct']):.1f}% vs current"
+                
+                best_wl = best_f.get("workload_pct", plant_workloads.get(best_f['factory'], (68, "bar-green"))[0])
+                is_feasible = best_f.get("capacity_feasible", True)
+                feasibility_color = "#087F5B" if is_feasible else "#DC2626"
+                feasibility_text = "Yes" if is_feasible else "No"
+                feasibility_sub = "(Within Capacity)" if is_feasible else f"({best_f.get('capacity_status', 'Infeasible')})"
+
+                kpi_html = f"""
+<div class="kpi-row-grid">
+    <div class="kpi-mini-card">
+        <div class="kpi-icon-bubble">⏱️</div>
+        <div>
+            <div class="kpi-meta-title">Best Lead Time</div>
+            <div class="kpi-stat-value">{best_f['predicted_lead_time']:.1f} days</div>
+            <div class="kpi-sub-delta">{lt_sub}</div>
+        </div>
+    </div>
+    <div class="kpi-mini-card">
+        <div class="kpi-icon-bubble">🚚</div>
+        <div>
+            <div class="kpi-meta-title">Distance Change</div>
+            <div class="kpi-stat-value">{dist_str}</div>
+            <div class="kpi-sub-delta">{dist_sub}</div>
+        </div>
+    </div>
+    <div class="kpi-mini-card">
+        <div class="kpi-icon-bubble">🏭</div>
+        <div>
+            <div class="kpi-meta-title">Workload ({best_f['factory'][:9]})</div>
+            <div class="kpi-stat-value">{best_wl}%</div>
+            <div class="kpi-sub-delta" style="color: #586B63;">Balanced Distribution</div>
+        </div>
+    </div>
+    <div class="kpi-mini-card">
+        <div class="kpi-icon-bubble">🛡️</div>
+        <div>
+            <div class="kpi-meta-title">Feasibility</div>
+            <div class="kpi-stat-value" style="color: {feasibility_color};">{feasibility_text}</div>
+            <div class="kpi-sub-delta" style="color: #586B63;">{feasibility_sub}</div>
+        </div>
+    </div>
+</div>
+"""
+                render_safe_html(kpi_html)
+
+                # Bottom Row: Insight & Business Impact
+                savings_pct = abs(best_f['profit_impact_pct'])
+                bottom_html = f"""
+<div class="bottom-row-grid">
+    <div class="insight-tinted-card">
+        <div>
+            <div class="insight-header-badge">
+                <span>💡</span>
+                <span>Optimization Insight</span>
             </div>
-            """, unsafe_allow_html=True)
-
-            # Bottom Row: Insight & Business Impact
-            savings_pct = abs(best_f['profit_impact_pct'])
-            st.markdown(f"""
-            <div class="bottom-row-grid">
-                <div class="insight-tinted-card">
-                    <div>
-                        <div class="insight-header-badge">
-                            <span>💡</span>
-                            <span>Optimization Insight</span>
-                        </div>
-                        <div class="insight-prose-text">
-                            Reassigning to <b>{best_f['factory']}</b> is predicted to optimize order dispatch to <b>{best_f['predicted_lead_time']:.1f} days</b> while keeping plant workload within capacity (<b>{best_wl}%</b>). {best_f['rationale']}
-                        </div>
-                    </div>
-                    <svg width="48" height="32" viewBox="0 0 60 40" fill="none">
-                        <path d="M4 36L20 22L34 28L56 8" stroke="#087F5B" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
-                        <path d="M44 8H56V20" stroke="#087F5B" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
-                    </svg>
-                </div>
-                <div class="impact-white-card">
-                    <div style="font-size: 12px; font-weight: 700; color: #11231D; display: flex; align-items: center; gap: 6px;">
-                        <span>💼</span>
-                        <span>Business Impact (Estimated)</span>
-                        <span style="font-size: 11px; color: #8E9F97;" title="Derived from mileage delta ($0.20/1k km) and carrying cost ($0.08/day)">ⓘ</span>
-                    </div>
-                    <div class="impact-metrics-row">
-                        <div class="impact-col-item">
-                            <div class="impact-col-label">📅 Lead Time Gain</div>
-                            <div class="impact-col-val impact-gain">{abs(best_f['lead_time_delta']):.1f} days</div>
-                        </div>
-                        <div class="impact-col-item">
-                            <div class="impact-col-label">📊 Service Imp.</div>
-                            <div class="impact-col-val impact-gain">+{abs(best_f['lead_time_reduction_pct']):.1f}%</div>
-                        </div>
-                        <div class="impact-col-item">
-                            <div class="impact-col-label">💰 Est. Cost Chg</div>
-                            <div class="impact-col-val impact-cost">-{savings_pct:.1f}%</div>
-                        </div>
-                        <div class="impact-col-item">
-                            <div class="impact-col-label">🛡️ Risk Level</div>
-                            <div class="impact-col-val" style="color: #087F5B;">{best_f['risk_level']}</div>
-                        </div>
-                    </div>
-                </div>
+            <div class="insight-prose-text">
+                Reassigning to <b>{best_f['factory']}</b> is predicted to optimize order dispatch to <b>{best_f['predicted_lead_time']:.1f} days</b> while keeping plant workload within capacity (<b>{best_wl}%</b>). {best_f['rationale']}
             </div>
-            """, unsafe_allow_html=True)
-
-            # Mandatory Limitation Notice
-            st.markdown(f"""
-            <div class="operational-limitation-banner">
-                {sim['limitation_statement']}
+        </div>
+        <svg width="48" height="32" viewBox="0 0 60 40" fill="none">
+            <path d="M4 36L20 22L34 28L56 8" stroke="#087F5B" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M44 8H56V20" stroke="#087F5B" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+    </div>
+    <div class="impact-white-card">
+        <div style="font-size: 12px; font-weight: 700; color: #11231D; display: flex; align-items: center; gap: 6px;">
+            <span>💼</span>
+            <span>Business Impact (Estimated)</span>
+            <span style="font-size: 11px; color: #8E9F97;" title="Derived from mileage delta ($0.20/1k km) and carrying cost ($0.08/day)">ⓘ</span>
+        </div>
+        <div class="impact-metrics-row">
+            <div class="impact-col-item">
+                <div class="impact-col-label">📅 Lead Time Gain</div>
+                <div class="impact-col-val impact-gain">{abs(best_f['lead_time_delta']):.1f} days</div>
             </div>
-            """, unsafe_allow_html=True)
+            <div class="impact-col-item">
+                <div class="impact-col-label">📊 Service Imp.</div>
+                <div class="impact-col-val impact-gain">+{abs(best_f['lead_time_reduction_pct']):.1f}%</div>
+            </div>
+            <div class="impact-col-item">
+                <div class="impact-col-label">💰 Est. Cost Chg</div>
+                <div class="impact-col-val impact-cost">-{savings_pct:.1f}%</div>
+            </div>
+            <div class="impact-col-item">
+                <div class="impact-col-label">🛡️ Risk Level</div>
+                <div class="impact-col-val" style="color: #087F5B;">{best_f['risk_level']}</div>
+            </div>
+        </div>
+    </div>
+</div>
+"""
+                render_safe_html(bottom_html)
 
-            st.markdown('</div>', unsafe_allow_html=True)
+                # Mandatory Limitation Notice
+                limitation_html = f"""
+<div class="operational-limitation-banner">
+    {sim['limitation_statement']}
+</div>
+"""
+                render_safe_html(limitation_html)
+
+                # Objective Score & Selection Breakdown Expander
+                with st.expander("🔍 Optimization Objective Score & Selection Breakdown", expanded=False):
+                    st.markdown("##### Multi-Objective Evaluation Breakdown")
+                    st.caption("Composite Score = (w_speed · SpeedScore + w_profit · MarginScore) · EvidenceFactor. Infeasible or tooling-ineligible candidates are strictly disqualified.")
+                    
+                    score_rows = []
+                    for f in sim["factories"]:
+                        score_rows.append({
+                            "Factory": f["factory"],
+                            "Role": "Recommended" if f.get("is_recommended") else ("Current" if f.get("is_current") else "Alternative"),
+                            "Pred. Lead Time": f"{f['predicted_lead_time']:.1f} d",
+                            "Distance (km)": f"{f['distance_km']:,}",
+                            "Speed Score (0-50)": f"{f.get('speed_score', 0.0):.1f}",
+                            "Margin Score (0-50)": f"{f.get('profit_score', 0.0):.1f}",
+                            "Evidence Factor": f"{f.get('evidence_factor', 1.0):.2f}",
+                            "Composite Score": f"{f.get('composite_score', 0.0):.1f}",
+                            "Feasibility": "✓ Feasible" if f.get("is_feasible_candidate", True) else f"✗ {f.get('capacity_status', 'Infeasible')}"
+                        })
+                    st.dataframe(pd.DataFrame(score_rows), use_container_width=True, hide_index=True)
+                    
+                    if best_f.get("selection_justification"):
+                        st.info(f"**Mathematical Selection Justification:** {best_f['selection_justification']}")
 
     elif opt_tab_choice == "⚖️ Scenario Comparison":
-        st.markdown('<div class="nassau-card">', unsafe_allow_html=True)
-        st.markdown("#### Scenario History & Saved Configurations")
-        st.caption("Review configurations evaluated in this session.")
-        saved_df = pd.DataFrame(st.session_state["saved_scenarios"])
-        st.dataframe(saved_df, use_container_width=True, hide_index=True)
-        st.markdown('</div>', unsafe_allow_html=True)
+        with st.container(border=True):
+            st.markdown("#### Scenario History & Saved Configurations")
+            st.caption("Review configurations evaluated in this session.")
+            saved_df = pd.DataFrame(st.session_state["saved_scenarios"])
+            st.dataframe(saved_df, use_container_width=True, hide_index=True)
 
     elif opt_tab_choice == "🏭 Factory Details":
-        st.markdown('<div class="nassau-card">', unsafe_allow_html=True)
-        st.markdown("#### Plant Profiles & Tooling Capability")
-        f_details = []
-        for name, info in FACTORIES.items():
-            f_details.append({
-                "Factory": name,
-                "Location": f"{info['city']}, {info['state']}",
-                "Assigned Region": info['region'],
-                "Specialization": info['specialty'],
-                "Coordinates": f"{info['lat']:.2f}° N, {abs(info['lon']):.2f}° W"
-            })
-        st.dataframe(pd.DataFrame(f_details), use_container_width=True, hide_index=True)
-        st.markdown('</div>', unsafe_allow_html=True)
+        with st.container(border=True):
+            st.markdown("#### Plant Profiles & Tooling Capability")
+            f_details = []
+            for name, info in FACTORIES.items():
+                f_details.append({
+                    "Factory": name,
+                    "Location": f"{info['city']}, {info['state']}",
+                    "Assigned Region": info['region'],
+                    "Specialization": info['specialty'],
+                    "Coordinates": f"{info['lat']:.2f}° N, {abs(info['lon']):.2f}° W"
+                })
+            st.dataframe(pd.DataFrame(f_details), use_container_width=True, hide_index=True)
 
     elif opt_tab_choice == "🛣️ Route Impact":
-        st.markdown('<div class="nassau-card">', unsafe_allow_html=True)
-        st.markdown("#### Freight Distance Comparison by Region")
-        fig_bar = create_lead_time_regional_bar(df)
-        st.plotly_chart(fig_bar, use_container_width=True, config={'displayModeBar': False})
-        st.markdown('</div>', unsafe_allow_html=True)
+        with st.container(border=True):
+            st.markdown("#### Freight Distance Comparison by Region")
+            fig_bar = create_lead_time_regional_bar(df)
+            st.plotly_chart(fig_bar, use_container_width=True, config={'displayModeBar': False})
 
     elif opt_tab_choice == "💡 Recommendations":
-        st.markdown('<div class="nassau-card">', unsafe_allow_html=True)
-        st.markdown("#### Complete Reassignment Sourcing Matrix")
-        all_recs = engine.generate_all_recommendations(priority_slider=70.0)
-        recs_full = build_recommendations_dataframe(
-            all_recs,
-            columns=[
-                "Product Name", "Current Factory", "Recommended Factory",
-                "Destination Region", "Recommendation Category", "Confidence Score", "Optimization Rationale"
-            ]
-        )
-        if recs_full.empty:
-            st.info("ℹ No reassignment sourcing recommendations available.")
-        else:
-            st.dataframe(recs_full, use_container_width=True, hide_index=True)
-        st.markdown('</div>', unsafe_allow_html=True)
+        with st.container(border=True):
+            st.markdown("#### Complete Reassignment Sourcing Matrix")
+            all_recs = engine.generate_all_recommendations(priority_slider=70.0)
+            recs_full = build_recommendations_dataframe(
+                all_recs,
+                columns=[
+                    "Product Name", "Current Factory", "Recommended Factory",
+                    "Destination Region", "Recommendation Category", "Confidence Score", "Optimization Rationale"
+                ]
+            )
+            if recs_full.empty:
+                st.info("ℹ No reassignment sourcing recommendations available.")
+            else:
+                st.dataframe(recs_full, use_container_width=True, hide_index=True)
 
 
 # ===========================================================================
